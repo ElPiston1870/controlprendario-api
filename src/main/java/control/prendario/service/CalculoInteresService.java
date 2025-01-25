@@ -43,7 +43,7 @@ public class CalculoInteresService {
             if (pagosCapital != null && !pagosCapital.isEmpty()) {
                 for (int j = 0; j < pagosCapital.size(); j++) {
                     Pago pago = pagosCapital.get(j);
-                    if (pago.getFechaPago().toLocalDate().isAfter(fechaInicio.plusMonths(i)) &&
+                    if ((pago.getFechaPago().toLocalDate().isAfter(fechaInicio.plusMonths(i )) || pago.getFechaPago().toLocalDate().isEqual(fechaInicio.plusMonths(i )) ) &&
                             pago.getFechaPago().toLocalDate().isBefore(fechaInicio.plusMonths(i + 1))) {
                         capitalActual = capitalActual.subtract(pago.getMontoPagado());
                     }
@@ -53,7 +53,7 @@ public class CalculoInteresService {
             if (pagosIntereses != null && !pagosIntereses.isEmpty()) {
                 for (int j = 0; j < pagosIntereses.size(); j++) {
                     Pago pago = pagosIntereses.get(j);
-                    if (pago.getFechaPago().toLocalDate().isAfter(fechaInicio.plusMonths(i )) &&
+                    if ((pago.getFechaPago().toLocalDate().isAfter(fechaInicio.plusMonths(i )) || pago.getFechaPago().toLocalDate().isEqual(fechaInicio.plusMonths(i )) ) &&
                             pago.getFechaPago().toLocalDate().isBefore(fechaInicio.plusMonths(i + 1))) {
                         interesPendiente = interesPendiente.subtract(pago.getMontoPagado());
                     }
