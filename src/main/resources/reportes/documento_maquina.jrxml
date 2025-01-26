@@ -84,7 +84,7 @@
 			<textField>
 				<reportElement x="0" y="410" width="555" height="64" uuid="d326abec-7488-47d4-9bf3-e6106aa53fcf"/>
 				<textElement textAlignment="Justified"/>
-				<textFieldExpression><![CDATA["Para constancia se firma el presente documento una vez leído y aprobado tal como aparece, en Santa María Huila, a los " + new SimpleDateFormat("dd").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + " días del mes de " + new SimpleDateFormat("MMMM").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})).toUpperCase() + " de " + new SimpleDateFormat("yyyy").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + ", en dos ejemplares para cada contratante."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Para constancia se firma el presente documento una vez leído y aprobado tal como aparece, en Santa María Huila, a los " + new SimpleDateFormat("dd").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + " días del mes de " + new SimpleDateFormat("MMMM", new Locale("es", "ES")).format(java.sql.Timestamp.valueOf($F{fechaPrestamo})).toUpperCase() + " de " + new SimpleDateFormat("yyyy").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + ", en dos ejemplares para cada contratante."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="60" y="540" width="200" height="20" uuid="6038f963-b495-45eb-89fc-239c096ea0a1"/>

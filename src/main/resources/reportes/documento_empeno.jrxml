@@ -92,9 +92,9 @@
 				<text><![CDATA[El señor PROPIETARIO EMPEÑADOR manifiesta al señor EMPEÑANTE, que cumplido el plazo de los tres (3) meses, hará la devolución del dinero y a su vez del vehículo.]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="0" y="420" width="555" height="40" uuid="d326abec-7488-47d4-9bf3-e6106aa53fcf"/>
+				<reportElement x="0" y="420" width="555" height="60" uuid="d326abec-7488-47d4-9bf3-e6106aa53fcf"/>
 				<textElement textAlignment="Justified"/>
-				<textFieldExpression><![CDATA["Para constancia se firma el presente documento una vez leído y aprobado tal como aparece, en Santa María Huila, a los " + new SimpleDateFormat("dd").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + " días del mes de " + new SimpleDateFormat("MMMM").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})).toUpperCase() + " de " + new SimpleDateFormat("yyyy").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + ", en dos ejemplares para cada contratante."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Para constancia se firma el presente documento una vez leído y aprobado tal como aparece, en Santa María Huila, a los " + new SimpleDateFormat("dd").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + " días del mes de " + new SimpleDateFormat("MMMM", new Locale("es", "ES")).format(java.sql.Timestamp.valueOf($F{fechaPrestamo})).toUpperCase() + " de " + new SimpleDateFormat("yyyy").format(java.sql.Timestamp.valueOf($F{fechaPrestamo})) + ", en dos ejemplares para cada contratante."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="50" y="500" width="200" height="20" uuid="6038f963-b495-45eb-89fc-239c096ea0a1"/>
