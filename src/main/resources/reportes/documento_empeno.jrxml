@@ -51,7 +51,7 @@
 				<text><![CDATA[PRIMERA.- Objeto:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="0" y="120" width="555" height="80" uuid="4ada9001-bbfa-4e26-b266-8a590e2d2335"/>
+				<reportElement x="0" y="120" width="555" height="100" uuid="4ada9001-bbfa-4e26-b266-8a590e2d2335"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA["El propietario Empeñador da en calidad de EMPEÑO el siguiente bien inmueble: CLASE DE VEHICULO: " + $F{vehiculo.tipoVehiculo} + "\nMARCA: " + $F{vehiculo.marca} + " LINEA: " + $F{vehiculo.linea} + " MODELO: " + $F{vehiculo.modelo} + "\nPLACA: " + $F{vehiculo.placa} + " CILINDRAJE: " + $F{vehiculo.cilindraje} + " COLOR: " + $F{vehiculo.color} + "\nNUMERO DE MOTOR: " + $F{vehiculo.numeroMotor} + " NUMERO DE CHASIS: " + $F{vehiculo.numeroChasis} + "\nSITIO DE MATRICULA: " + $F{vehiculo.sitioMatricula} + " FECHA DE MATRICULA: " + new SimpleDateFormat("dd/MM/yyyy").format($F{vehiculo.fechaMatricula}) + " Y FIGURA A NOMBRE DE: " + $F{vehiculo.propietario}]]></textFieldExpression>
 			</textField>
