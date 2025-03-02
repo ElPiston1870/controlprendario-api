@@ -115,6 +115,11 @@ public class PrestamoMaquinaService {
                 .toList();
     }
 
+    public List<PrestamoMaquina> findPrestamosVencidos() {
+        return
+                prestamoMaquinaRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO);
+    }
+
     public Long getUltimoIdPrestamo() {
         return prestamoMaquinaRepository.findMaxId();
     }

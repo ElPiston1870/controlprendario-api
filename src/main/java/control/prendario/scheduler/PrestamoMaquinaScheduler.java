@@ -34,7 +34,7 @@ public class PrestamoMaquinaScheduler {
         int actualizados = 0;
         for (PrestamoMaquina prestamo : prestamosActivos) {
             if (prestamo.getFechaVencimiento() != null && prestamo.getFechaVencimiento().isBefore(ahora.toLocalDate())) {
-                prestamo.setEstadoPrestamo(EstadoPrestamo.VENCIDO);
+                prestamo.setEstadoPrestamo(EstadoPrestamo.PENDIENTE);
                 prestamoRepository.save(prestamo);
                 actualizados++;
 

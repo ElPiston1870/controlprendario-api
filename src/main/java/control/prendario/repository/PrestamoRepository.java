@@ -17,13 +17,6 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Long> {
             "OR LOWER(c.numeroDocumento) LIKE LOWER(CONCAT('%', :termino, '%'))")
     List<Prestamo> findByBusquedaGeneral(String termino);
 
-    @Query("SELECT p FROM Prestamo p JOIN p.cliente c " +
-            "WHERE (:nombreCliente IS NULL OR " +
-            "LOWER(CONCAT(c.nombres, ' ', c.apellidos)) LIKE LOWER(CONCAT('%', :nombreCliente, '%'))) " +
-            "AND (:numeroDocumento IS NULL OR " +
-            "LOWER(c.numeroDocumento) LIKE LOWER(CONCAT('%', :numeroDocumento, '%')))")
-    List<Prestamo> findByFiltros(String nombreCliente, String numeroDocumento);
-
     @Query("SELECT COALESCE(SUM(p.montoPrestamo), 0) FROM Prestamo p")
     BigDecimal sumTotalPrestamos();
 

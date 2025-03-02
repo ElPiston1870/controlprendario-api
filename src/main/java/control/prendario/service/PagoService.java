@@ -102,10 +102,17 @@ public class PagoService {
         if (interesPendiente.compareTo(BigDecimal.ZERO) < 0) {
             interesPendiente = BigDecimal.ZERO;
         }
-
-        if ((EstadoPrestamo.ACTIVO.equals(prestamo.getEstadoPrestamo()) || EstadoPrestamo.VENCIDO
-                .equals(prestamo.getEstadoPrestamo())) && capitalPendiente.compareTo(BigDecimal.ZERO) == 0) {
+        //Si el prestamo esta saldado el estado pasa a Pagado
+        if (!EstadoPrestamo.PAGADO.equals(prestamo.getEstadoPrestamo()) && capitalPendiente.compareTo(BigDecimal.ZERO) == 0) {
             prestamo.setEstadoPrestamo(EstadoPrestamo.PAGADO);
+            prestamoRepository.save(prestamo);
+        }
+        //Si el prestamo supera tiene una deuda mayor pasa a estado vencido
+        if ( (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0) && EstadoPrestamo.PENDIENTE.equals(prestamo.getEstadoPrestamo())) {
+            prestamo.setEstadoPrestamo(EstadoPrestamo.VENCIDO);
+            prestamoRepository.save(prestamo);
+        }else if (EstadoPrestamo.VENCIDO.equals(prestamo.getEstadoPrestamo()) && (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) <= 0) ){
+            prestamo.setEstadoPrestamo(EstadoPrestamo.PENDIENTE);
             prestamoRepository.save(prestamo);
         }
 

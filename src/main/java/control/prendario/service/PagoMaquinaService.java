@@ -93,6 +93,20 @@ public class PagoMaquinaService {
             interesPendiente = BigDecimal.ZERO;
         }
 
+        //Si el prestamo esta saldado el estado pasa a Pagado
+        if (!EstadoPrestamo.PAGADO.equals(prestamoMaquina.getEstadoPrestamo()) && capitalPendiente.compareTo(BigDecimal.ZERO) == 0) {
+            prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.PAGADO);
+            prestamoMaquinaRepository.save(prestamoMaquina);
+        }
+        //Si el prestamo supera tiene una deuda mayor pasa a estado vencido
+        if ( (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0) && EstadoPrestamo.PENDIENTE.equals(prestamoMaquina.getEstadoPrestamo())) {
+            prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.VENCIDO);
+            prestamoMaquinaRepository.save(prestamoMaquina);
+        }else if (EstadoPrestamo.VENCIDO.equals(prestamoMaquina.getEstadoPrestamo()) && (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) <= 0) ){
+            prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.PENDIENTE);
+            prestamoMaquinaRepository.save(prestamoMaquina);
+        }
+
         //Calcular interes pendiente
         BigDecimal interesTotal = interesPagado.add(interesPendiente);
 

@@ -55,7 +55,7 @@ public class MovimientoService {
         if (totalPrestamos == null) totalPrestamos = BigDecimal.ZERO;
 
         //Obtener total de prestamos activos
-        BigDecimal prestamosActivos = prestamoRepository.sumarMontosPorEstado(EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO).add(prestamoMaquinaRepository.sumarMontosPorEstado(EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO));
+        BigDecimal prestamosActivos = prestamoRepository.sumarMontosPorEstado(EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO, EstadoPrestamo.PENDIENTE).add(prestamoMaquinaRepository.sumarMontosPorEstado(EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO, EstadoPrestamo.PENDIENTE));
 
         // Calcular balance final
         BigDecimal balanceTotal = balanceMovimientos

@@ -2,7 +2,6 @@ package control.prendario.service;
 
 import control.prendario.DTO.PrestamoDTO;
 import control.prendario.DTO.VehicleDTO;
-import control.prendario.mapper.VehicleMapper;
 import control.prendario.model.Cliente;
 import control.prendario.model.EstadoPrestamo;
 import control.prendario.model.Prestamo;
@@ -12,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PrestamoService {
@@ -27,8 +24,7 @@ public class PrestamoService {
     @Autowired
     private VehicleService vehicleService;
 
-    @Autowired
-    private VehicleMapper vehicleMapper;
+
 
     @Transactional
     public Prestamo savePrestamo(PrestamoDTO prestamoDTO) {
@@ -130,13 +126,8 @@ public class PrestamoService {
     }
 
     public List<Prestamo> findPrestamosVencidos() {
-        LocalDateTime now = LocalDateTime.now();
-        return prestamoRepository.findAll().stream()
-                .filter(prestamo ->
-                        prestamo.getEstadoPrestamo() == EstadoPrestamo.ACTIVO &&
-                                prestamo.getFechaVencimiento() != null &&
-                                prestamo.getFechaVencimiento().isBefore(now))
-                .collect(Collectors.toList());
+        return
+                prestamoRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO);
     }
 
     public Long getUltimoIdPrestamo() {
