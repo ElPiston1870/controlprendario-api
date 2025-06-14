@@ -21,7 +21,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/clientes")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Clientes", description = "API para la gestión de clientes del sistema de préstamos prendarios")
 @SecurityRequirement(name = "JWT")
 public class ClienteController {

@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Usuarios", description = "Gestión de usuarios del sistema")
 @SecurityRequirement(name = "JWT")
 public class UserController {

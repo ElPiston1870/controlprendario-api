@@ -24,7 +24,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/prestamos")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Préstamos",
         description = "API para la gestión de préstamos prendarios")
 public class PrestamoController {

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticación", description = "API para autenticación y gestión de tokens JWT")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;

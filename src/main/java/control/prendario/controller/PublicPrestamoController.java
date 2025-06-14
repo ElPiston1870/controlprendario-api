@@ -17,7 +17,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/public/prestamos")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Préstamos Públicos",
         description = "API pública para consulta de préstamos sin autenticación")
 public class PublicPrestamoController {

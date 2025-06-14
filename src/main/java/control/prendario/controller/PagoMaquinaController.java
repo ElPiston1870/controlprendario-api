@@ -21,7 +21,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pagos-maquinas")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Pagos de Máquinas",
         description = "API para la gestión de pagos de préstamos de máquinas")
 @SecurityRequirement(name = "JWT")

@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Vehículos",
         description = "API para la gestión de vehículos en garantía")
 @SecurityRequirement(name = "JWT")

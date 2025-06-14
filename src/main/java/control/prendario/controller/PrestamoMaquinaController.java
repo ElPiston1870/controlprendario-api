@@ -23,7 +23,6 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/prestamos-maquinas")
-@CrossOrigin(origins = "https://controlprendario.netlify.app")
 @Tag(name = "Préstamos de Máquinas",
         description = "API para la gestión de préstamos de máquinas")
 @SecurityRequirement(name = "JWT")
