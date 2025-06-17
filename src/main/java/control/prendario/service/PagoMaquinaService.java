@@ -124,6 +124,13 @@ public class PagoMaquinaService {
         resumen.put("capitalPendiente", capitalPendiente);
         resumen.put("interesPendiente", interesPendiente);
 
+        prestamoMaquina.setInteresTotal(interesTotal);
+        prestamoMaquina.setCapitalPagado(capitalPagado);
+        prestamoMaquina.setInteresPagado(interesPagado);
+        prestamoMaquina.setCapitalPendiente(capitalPendiente);
+        prestamoMaquina.setInteresPendiente(interesPendiente);
+        prestamoMaquinaRepository.save(prestamoMaquina);
+
         return resumen;
     }
 

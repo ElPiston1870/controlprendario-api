@@ -4,6 +4,8 @@ import control.prendario.DTO.PrestamoDTO;
 import control.prendario.DTO.PrestamoMaquinaDTO;
 import control.prendario.model.Prestamo;
 import control.prendario.model.PrestamoMaquina;
+import control.prendario.service.PagoMaquinaService;
+import control.prendario.service.PagoService;
 import control.prendario.service.PrestamoMaquinaService;
 import control.prendario.service.PrestamoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +35,10 @@ public class PrestamoController {
 
     @Autowired
     private PrestamoMaquinaService prestamoMaquinaService;
+    @Autowired
+    private PagoService pagoService;
+    @Autowired
+    private PagoMaquinaService pagoMaquinaService;
 
     @Operation(summary = "Crear nuevo préstamo",
             description = "Crea un nuevo préstamo prendario con la información proporcionada")
@@ -67,6 +73,7 @@ public class PrestamoController {
             @RequestBody PrestamoDTO prestamoDTO) {
         try {
             Prestamo savedPrestamo = prestamoService.savePrestamo(prestamoDTO);
+            pagoService.obtenerResumenPagos(prestamoService.getUltimoIdPrestamo() );
             return ResponseEntity.ok(savedPrestamo);
         } catch (Exception e) {
             String errorMessage = "Error al crear el préstamo: " + e.getMessage();
@@ -99,11 +106,7 @@ public class PrestamoController {
             response.put("prestamos", prestamos);
             response.put("maquinas", maquinas);
 
-            System.out.println("Número de préstamos: " + prestamos.size());
-            System.out.println("Número de máquinas: " + maquinas.size());
-
             return ResponseEntity.ok(response);
-
 
         }catch (Exception e){
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener datos :" + e.getMessage());
@@ -209,7 +212,9 @@ public class PrestamoController {
             )
             @RequestBody PrestamoDTO prestamoDTO) {
         try {
-            return ResponseEntity.ok(prestamoService.updatePrestamo(id, prestamoDTO));
+            ResponseEntity<Prestamo> respuesta = ResponseEntity.ok(prestamoService.updatePrestamo(id, prestamoDTO));
+            pagoService.obtenerResumenPagos(id);
+            return respuesta;
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body("Error al actualizar el préstamo: " + e.getMessage());
@@ -251,7 +256,9 @@ public class PrestamoController {
             )
             @RequestBody PrestamoMaquinaDTO prestamoMaquinaDTO) {
         try {
-            return ResponseEntity.ok(prestamoMaquinaService.actualizarPrestamoMaquina(id, prestamoMaquinaDTO));
+            ResponseEntity<PrestamoMaquina> respuesta = ResponseEntity.ok(prestamoMaquinaService.actualizarPrestamoMaquina(id, prestamoMaquinaDTO));
+            pagoMaquinaService.obtenerResumenPagos(id);
+            return respuesta;
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body("Error al actualizar el préstamo: " + e.getMessage());

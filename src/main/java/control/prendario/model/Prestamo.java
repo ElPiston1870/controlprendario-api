@@ -64,15 +64,25 @@ public class Prestamo {
     @Schema(description = "Observaciones del prestamo")
     private String observaciones;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "interes_total")
+    private BigDecimal interesTotal;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "capital_pagado")
+    private BigDecimal capitalPagado;
+
+    @Column(name = "interes_pagado")
+    private BigDecimal interesPagado;
+
+    @Column(name = "interes_pendiente")
+    private  BigDecimal interesPendiente;
+
+    @Column(name = "capital_pendiente")
+    private  BigDecimal capitalPendiente;
+
+
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
         fechaPrestamo = LocalDateTime.now();
         // Establecer fecha de vencimiento a 3 meses después
         fechaVencimiento = fechaPrestamo.plusMonths(3);
@@ -82,10 +92,7 @@ public class Prestamo {
         }
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+
 
 
 }

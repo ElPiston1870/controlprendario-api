@@ -2,6 +2,7 @@ package control.prendario.controller;
 
 import control.prendario.DTO.PrestamoMaquinaDTO;
 import control.prendario.model.PrestamoMaquina;
+import control.prendario.service.PagoMaquinaService;
 import control.prendario.service.PrestamoMaquinaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,8 @@ public class PrestamoMaquinaController {
 
     @Autowired
     private PrestamoMaquinaService prestamoMaquinaService;
+    @Autowired
+    private PagoMaquinaService pagoMaquinaService;
 
     @Operation(summary = "Crear nuevo préstamo de máquina",
             description = "Registra un nuevo préstamo de máquina en el sistema")
@@ -50,6 +53,7 @@ public class PrestamoMaquinaController {
             @RequestBody PrestamoMaquinaDTO prestamo) {
         try {
             PrestamoMaquina nuevoPrestamo = prestamoMaquinaService.crearPrestamoMaquina(prestamo);
+            pagoMaquinaService.obtenerResumenPagos(prestamoMaquinaService.getUltimoIdPrestamo());
             return ResponseEntity.ok(nuevoPrestamo);
         } catch (Exception e) {
             System.out.println("Error creando el prestamo 12");

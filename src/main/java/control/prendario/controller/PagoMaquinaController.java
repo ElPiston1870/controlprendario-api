@@ -54,70 +54,15 @@ public class PagoMaquinaController {
             @RequestBody PagoMaquina pago) {
 
         System.out.println( "Pago a insertar de maquinas: " +pago);
-        return ResponseEntity.ok(pagoMaquinaService.crearPago(pago));
+
+        ResponseEntity<PagoMaquina> respuesta = ResponseEntity.ok(pagoMaquinaService.crearPago(pago));
+        pagoMaquinaService.obtenerResumenPagos(pago.getPrestamoMaquina().getIdPrestamoMaquina());
+        return respuesta;
+
 
     }
 
-    @Operation(summary = "Obtener pagos por préstamo",
-            description = "Obtiene todos los pagos asociados a un préstamo de máquina específico")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de pagos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = PagoMaquina.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Préstamo no encontrado"
-            )
-    })
-    @GetMapping("/prestamo/{idPrestamoMaquina}")
-    public ResponseEntity<List<PagoMaquina>> obtenerPagosPorPrestamo(
-            @Parameter(description = "ID del préstamo de máquina", required = true, example = "1")
-            @PathVariable Long idPrestamoMaquina) {
-        return ResponseEntity.ok(pagoMaquinaService.obtenerPagosPorPrestamoMaquina(idPrestamoMaquina));
-    }
 
-    @Operation(summary = "Obtener resumen de pagos",
-            description = "Obtiene un resumen detallado de los pagos realizados para un préstamo de máquina")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Resumen de pagos obtenido exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "object",
-                                    example = """
-                                    {
-                                        "capitalTotal": "10000.00",
-                                        "interesTotal": "1500.00",
-                                        "capitalPagado": "5000.00",
-                                        "interesPagado": "750.00",
-                                        "capitalPendiente": "5000.00",
-                                        "interesPendiente": "750.00"
-                                    }
-                                    """
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Préstamo no encontrado"
-            )
-    })
 
-    @GetMapping("/prestamo/{idPrestamoMaquina}/resumen")
-    public ResponseEntity<Map<String, BigDecimal>> obtenerResumenPagos(
-            @Parameter(description = "ID del préstamo de máquina", required = true, example = "1")
-            @PathVariable Long idPrestamoMaquina) {
-        try {
-            return ResponseEntity.ok(pagoMaquinaService.obtenerResumenPagos(idPrestamoMaquina));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+
 }

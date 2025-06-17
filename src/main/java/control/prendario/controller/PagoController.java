@@ -115,100 +115,13 @@ public class PagoController {
                     schema = @Schema(implementation = Pago.class)
             )
             @RequestBody Pago pago) {
-        System.out.println( "Pago a insertar de maquinas: " +pago);
-        return ResponseEntity.ok(pagoService.crearPago(pago));
+        ResponseEntity<Pago> respuesta = ResponseEntity.ok(pagoService.crearPago(pago));
+        pagoService.obtenerResumenPagos(pago.getPrestamo().getIdPrestamo());
+        return respuesta;
     }
 
-    @Operation(summary = "Obtener pagos por préstamo",
-            description = "Obtiene todos los pagos asociados a un préstamo específico")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de pagos del préstamo obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Pago.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Préstamo no encontrado"
-            )
-    })
-    @GetMapping("/prestamo/{idPrestamo}")
-    public ResponseEntity<List<Pago>> obtenerPagosPorPrestamo(
-            @Parameter(
-                    description = "ID del préstamo",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long idPrestamo) {
-        return ResponseEntity.ok(pagoService.obtenerPagosPorPrestamo(idPrestamo));
-    }
 
-    @Operation(summary = "Obtener resumen de pagos",
-            description = "Obtiene un resumen de los pagos realizados para un préstamo específico")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Resumen de pagos obtenido exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "object",
-                                    example = """
-                        {
-                            "totalPagado": "5000.00",
-                            "totalCapital": "4000.00",
-                            "totalInteres": "1000.00",
-                            "totalMora": "0.00"
-                        }
-                    """
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Préstamo no encontrado"
-            )
-    })
-    @GetMapping("/prestamo/{idPrestamo}/resumen")
-    public ResponseEntity<Map<String, BigDecimal>> obtenerResumenPagos(
-            @Parameter(
-                    description = "ID del préstamo",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long idPrestamo) {
-        return ResponseEntity.ok(pagoService.obtenerResumenPagos(idPrestamo));
-    }
 
-    @Operation(summary = "Buscar pagos por cliente",
-            description = "Busca pagos asociados a un cliente específico")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Búsqueda realizada exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Pago.class
-                            )
-                    )
-            )
-    })
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Pago>> buscarPagosPorCliente(
-            @Parameter(
-                    description = "Término de búsqueda (nombre o documento del cliente)",
-                    required = true,
-                    example = "Juan Pérez"
-            )
-            @RequestParam String termino) {
-        return ResponseEntity.ok(pagoService.buscarPagosPorCliente(termino));
-    }
+
+
 }

@@ -72,7 +72,7 @@ public class PagoService {
         return pagoRepository.findByPrestamoIdPrestamoOrderByFechaPagoDesc(idPrestamo);
     }
 
-    public Map<String, BigDecimal> obtenerResumenPagos(Long idPrestamo) {
+    public void obtenerResumenPagos(Long idPrestamo) {
         Prestamo prestamo = prestamoRepository.findById(idPrestamo)
                 .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
 
@@ -119,16 +119,13 @@ public class PagoService {
         // Calcular interés total (intereses pagados + pendientes)
         BigDecimal interesTotal = interesPagado.add(interesPendiente);
 
+        prestamo.setInteresTotal(interesTotal);
+        prestamo.setCapitalPagado(capitalPagado);
+        prestamo.setInteresPagado(interesPagado);
+        prestamo.setCapitalPendiente(capitalPendiente);
+        prestamo.setInteresPendiente(interesPendiente);
+        prestamoRepository.save(prestamo);
 
-        Map<String, BigDecimal> resumen = new HashMap<>();
-        resumen.put("capitalTotal", prestamo.getMontoPrestamo());
-        resumen.put("interesTotal", interesTotal);
-        resumen.put("capitalPagado", capitalPagado);
-        resumen.put("interesPagado", interesPagado);
-        resumen.put("capitalPendiente", capitalPendiente);
-        resumen.put("interesPendiente", interesPendiente);
-
-        return resumen;
     }
 
     public List<Pago> buscarPagosPorCliente(String termino) {
