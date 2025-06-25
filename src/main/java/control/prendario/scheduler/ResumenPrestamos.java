@@ -10,7 +10,6 @@ import control.prendario.service.PrestamoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,8 +27,7 @@ public class ResumenPrestamos {
     private PagoMaquinaService pagoMaquinaService;
 
 
-    @Scheduled(cron = "0 0 1 * * *")
-    @Transactional
+    @Scheduled(cron = "0 0 1 * * *", zone = "America/Bogota")
     public void realizarResumen() {
 
         List<Prestamo> prestamos = prestamoService.getAllPrestamos();
@@ -42,6 +40,8 @@ public class ResumenPrestamos {
         for(PrestamoMaquina maquina: maquinas){
             pagoMaquinaService.obtenerResumenPagos(maquina.getIdPrestamoMaquina());
         }
-        System.out.println("Se ralizaron los resumenes");
+
+        prestamos = null;
+        maquinas = null;
     }
 }
