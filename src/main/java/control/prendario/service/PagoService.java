@@ -108,7 +108,7 @@ public class PagoService {
             prestamoRepository.save(prestamo);
         }
         //Si el prestamo supera tiene una deuda mayor pasa a estado vencido
-        if ( (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0) && EstadoPrestamo.PENDIENTE.equals(prestamo.getEstadoPrestamo())) {
+        if ( (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0) && (EstadoPrestamo.PENDIENTE.equals(prestamo.getEstadoPrestamo()) || EstadoPrestamo.ACTIVO.equals(prestamo.getEstadoPrestamo())) {
             prestamo.setEstadoPrestamo(EstadoPrestamo.VENCIDO);
             prestamoRepository.save(prestamo);
         }else if (EstadoPrestamo.VENCIDO.equals(prestamo.getEstadoPrestamo()) && (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) <= 0) ){
