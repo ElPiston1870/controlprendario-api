@@ -56,8 +56,7 @@ public class CalculoInteresMaquinaService {
                 for (int j = 0; j < pagosIntereses.size(); j++) {
                     PagoMaquina pago = pagosIntereses.get(j);
                     if ((pago.getFechaPago().toLocalDate().isAfter(fechaInicio.plusMonths(i )) || pago.getFechaPago().toLocalDate().isEqual(fechaInicio.plusMonths(i )) ) && (
-                            pago.getFechaPago().toLocalDate().isBefore(fechaInicio.plusMonths(i + 1)) ||
-                                    pago.getFechaPago().toLocalDate().equals(fechaInicio.plusMonths(i + 1)))) {
+                            pago.getFechaPago().toLocalDate().isBefore(fechaInicio.plusMonths(i + 1)))) {
                         interesPendiente = interesPendiente.subtract(pago.getMontoPagado());
                     }
 
