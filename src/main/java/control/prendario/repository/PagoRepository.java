@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findByPrestamoIdPrestamoOrderByFechaPagoDesc(Long idPrestamo);
+    List<Pago> findByPrestamoClienteIdClienteOrderByFechaPagoDesc(Long idCliente);
 
     @Query("SELECT p FROM Pago p WHERE p.prestamo.cliente.nombres LIKE %:termino% " +
             "OR p.prestamo.cliente.apellidos LIKE %:termino% " +

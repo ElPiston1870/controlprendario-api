@@ -64,6 +64,38 @@ public class PagoMaquinaService {
         return pagoMaquinaRepository.save(pago);
     }
 
+    @Transactional
+    public PagoMaquina aplicarDescuentoInteres(Long idPrestamoMaquina, BigDecimal montoInteres) {
+        PrestamoMaquina prestamoMaquina = prestamoMaquinaRepository.findById(idPrestamoMaquina)
+                .orElseThrow(() -> new RuntimeException("Préstamo de máquina no encontrado"));
+
+        if (montoInteres == null || montoInteres.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto del descuento debe ser mayor que cero");
+        }
+
+        BigDecimal interesPendiente = calculoInteresMaquinaService
+                .calcularInteresPendiente(prestamoMaquina, LocalDate.now());
+
+        if (interesPendiente.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El préstamo no tiene intereses pendientes");
+        }
+        if (montoInteres.compareTo(interesPendiente) > 0) {
+            throw new IllegalArgumentException("El descuento no puede exceder el interés pendiente");
+        }
+
+        PagoMaquina pagoDescuento = new PagoMaquina();
+        pagoDescuento.setPrestamoMaquina(prestamoMaquina);
+        pagoDescuento.setMontoPagado(montoInteres);
+        pagoDescuento.setTipoPago(Pago.TipoPago.INTERES);
+        pagoDescuento.setObservaciones("Descuento aplicado al interés");
+
+        PagoMaquina descuentoGuardado = pagoMaquinaRepository.save(pagoDescuento);
+        obtenerResumenPagos(idPrestamoMaquina);
+
+        return descuentoGuardado;
+    }
+
+
     public Map<String, BigDecimal> obtenerResumenPagos(Long idPrestamoMaquina) {
         PrestamoMaquina prestamoMaquina = prestamoMaquinaRepository.findById(idPrestamoMaquina)
                 .orElseThrow(() -> new RuntimeException("Préstamo de máquina no encontrado"));

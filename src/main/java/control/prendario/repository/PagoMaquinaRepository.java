@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface PagoMaquinaRepository extends JpaRepository<PagoMaquina, Long> {
     List<PagoMaquina> findByPrestamoMaquinaIdPrestamoMaquinaOrderByFechaPagoDesc(Long idPrestamoMaquina);
+    List<PagoMaquina> findByPrestamoMaquinaClienteIdClienteOrderByFechaPagoDesc(Long idCliente);
 
     @Query("SELECT SUM(p.montoPagado) FROM PagoMaquina p " +
             "WHERE p.prestamoMaquina.idPrestamoMaquina = :idPrestamoMaquina " +

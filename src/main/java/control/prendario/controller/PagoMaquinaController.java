@@ -62,6 +62,29 @@ public class PagoMaquinaController {
 
     }
 
+    @Operation(
+            summary = "Aplicar descuento de intereses",
+            description = "Reduce los intereses pendientes de un préstamo de maquinaria y registra el descuento como trazabilidad."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Descuento aplicado exitosamente",
+                    content = @Content(schema = @Schema(implementation = PagoMaquina.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "Monto inválido o descuento superior al interés pendiente"),
+            @ApiResponse(responseCode = "404", description = "Préstamo de máquina no encontrado")
+    })
+    @PostMapping("/descuento-interes/{idPrestamoMaquina}")
+    public ResponseEntity<PagoMaquina> aplicarDescuentoInteres(
+            @Parameter(description = "ID del préstamo de maquinaria", required = true, example = "1")
+            @PathVariable Long idPrestamoMaquina,
+            @Parameter(description = "Monto que se descontará del interés pendiente", required = true, example = "50000")
+            @RequestParam BigDecimal montoDescuento
+    ) {
+        return ResponseEntity.ok(pagoMaquinaService.aplicarDescuentoInteres(idPrestamoMaquina, montoDescuento));
+    }
+
 
 
 

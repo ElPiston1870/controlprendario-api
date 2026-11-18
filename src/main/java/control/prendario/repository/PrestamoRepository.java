@@ -31,4 +31,5 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Long> {
     List<Prestamo> findAllByOrderByIdPrestamoDesc();
     List<Prestamo> findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(String nombres, String apellidos);
     List<Prestamo> findByClienteNumeroDocumentoContaining(String numeroDocumento);
+    List<Prestamo> findByClienteIdClienteOrderByFechaPrestamoDesc(Long idCliente);
 }

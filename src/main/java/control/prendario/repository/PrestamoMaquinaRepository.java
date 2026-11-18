@@ -39,5 +39,6 @@ public interface PrestamoMaquinaRepository extends JpaRepository<PrestamoMaquina
     List<PrestamoMaquina> findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(String nombres, String apellidos);
     List<PrestamoMaquina> findByClienteNumeroDocumentoContaining(String numeroDocumento);
     List<PrestamoMaquina> findAllByOrderByIdPrestamoMaquinaDesc();
+    List<PrestamoMaquina> findByClienteIdClienteOrderByFechaPrestamoDesc(Long idCliente);
 
 }

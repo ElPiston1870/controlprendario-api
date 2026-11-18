@@ -64,6 +64,8 @@ public class CalculoInteresService {
         return interesPendiente;
     }
 
+
+
     private int calcularMesesEntreFechas(LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("La fecha inicial no puede ser posterior a la fecha final");

@@ -1,8 +1,13 @@
 package control.prendario.service;
 
 
+import control.prendario.DTO.HistorialClienteDTO;
 import control.prendario.model.Cliente;
 import control.prendario.repository.ClienteRepository;
+import control.prendario.repository.PagoMaquinaRepository;
+import control.prendario.repository.PagoRepository;
+import control.prendario.repository.PrestamoMaquinaRepository;
+import control.prendario.repository.PrestamoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +19,18 @@ public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PrestamoRepository prestamoRepository;
+
+    @Autowired
+    private PrestamoMaquinaRepository prestamoMaquinaRepository;
+
+    @Autowired
+    private PagoRepository pagoRepository;
+
+    @Autowired
+    private PagoMaquinaRepository pagoMaquinaRepository;
 
     public Cliente guardarCliente(Cliente cliente) {
         if (existeDocumento(cliente.getNumeroDocumento())) {
@@ -27,9 +44,26 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
+
     public Cliente obtenerPorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new ClienteNotFoundException("Cliente con ID " + id + " no encontrado"));
+    }
+
+    public HistorialClienteDTO consultarHistorial(Long id) {
+        Cliente cliente = obtenerPorId(id);
+
+        return HistorialClienteDTO.builder()
+                .cliente(cliente)
+                .prestamosVehiculares(prestamoRepository
+                        .findByClienteIdClienteOrderByFechaPrestamoDesc(id))
+                .prestamosMaquinaria(prestamoMaquinaRepository
+                        .findByClienteIdClienteOrderByFechaPrestamoDesc(id))
+                .pagosVehiculares(pagoRepository
+                        .findByPrestamoClienteIdClienteOrderByFechaPagoDesc(id))
+                .pagosMaquinaria(pagoMaquinaRepository
+                        .findByPrestamoMaquinaClienteIdClienteOrderByFechaPagoDesc(id))
+                .build();
     }
 
     public class ClienteNotFoundException extends RuntimeException {

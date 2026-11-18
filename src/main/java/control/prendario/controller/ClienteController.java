@@ -1,5 +1,6 @@
 package control.prendario.controller;
 
+import control.prendario.DTO.HistorialClienteDTO;
 import control.prendario.model.Cliente;
 import control.prendario.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
+
 
     @Operation(summary = "Crear nuevo cliente",
             description = "Crea un nuevo cliente en el sistema con la información proporcionada")
@@ -115,6 +117,42 @@ public class ClienteController {
             @Parameter(description = "ID del cliente", required = true)
             @PathVariable Long id) {
         return ResponseEntity.ok(clienteService.obtenerPorId(id));
+    }
+
+    @Operation(
+            summary = "Consultar historial del cliente",
+            description = "Obtiene la información del cliente y su historial consolidado de préstamos vehiculares y de maquinaria."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Historial obtenido exitosamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HistorialClienteDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cliente no encontrado",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Error interno al consultar el historial"
+            )
+    })
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<HistorialClienteDTO> consultarHistorial(
+            @Parameter(
+                    name = "id",
+                    description = "Identificador único del cliente",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(clienteService.consultarHistorial(id));
     }
 
     @Operation(summary = "Actualizar cliente",

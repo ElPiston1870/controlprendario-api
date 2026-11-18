@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -70,6 +71,37 @@ public class PagoService {
 
     public List<Pago> obtenerPagosPorPrestamo(Long idPrestamo) {
         return pagoRepository.findByPrestamoIdPrestamoOrderByFechaPagoDesc(idPrestamo);
+    }
+
+    @Transactional
+    public Pago aplicarDescuentoInteres(Long idPrestamo, BigDecimal montoDescuento) {
+        Prestamo prestamo = prestamoRepository.findById(idPrestamo)
+                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+
+        if (montoDescuento == null || montoDescuento.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto del descuento debe ser mayor que cero");
+        }
+
+        BigDecimal interesPendiente = calculoInteresService.calcularInteresPendiente(prestamo, LocalDate.now());
+
+        if (interesPendiente.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El préstamo no tiene intereses pendientes");
+        }
+        if (montoDescuento.compareTo(interesPendiente) > 0) {
+            throw new IllegalArgumentException("El descuento no puede exceder el interés pendiente");
+        }
+
+        Pago pagoDescuento = new Pago();
+        pagoDescuento.setPrestamo(prestamo);
+        pagoDescuento.setMontoPagado(montoDescuento);
+        pagoDescuento.setTipoPago(Pago.TipoPago.INTERES);
+        pagoDescuento.setFechaPago(LocalDateTime.now());
+        pagoDescuento.setObservaciones("Descuento aplicado al interés pendiente");
+
+        Pago descuentoGuardado = pagoRepository.save(pagoDescuento);
+        obtenerResumenPagos(idPrestamo);
+
+        return descuentoGuardado;
     }
 
     public void obtenerResumenPagos(Long idPrestamo) {
