@@ -1,0 +1,64 @@
+@startuml 07-despliegue
+' Diagrama de despliegue - Control Prendario
+' Fuente: pom.xml, application.properties, WebConfig.java (CORS), informe de avance seccion 15
+title Control Prendario - Diagrama de despliegue
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam node {
+  BackgroundColor #EAF2F2
+  BorderColor #2F6F6F
+}
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor #2F6F6F
+}
+skinparam database {
+  BackgroundColor #FFF4E0
+  BorderColor #B07A2A
+}
+
+node "PC del almacén\n<<dispositivo>>" as pc {
+  node "Navegador web\n(Chrome / Edge)\n<<entorno de ejecución>>" as browser {
+    artifact "Aplicación Angular 18\n(SPA en ejecución)" as spa
+    artifact "Visor PDF del navegador" as visor
+  }
+}
+
+node "Servidor frontend\n<<dispositivo>>\nNetlify (controlprendario.netlify.app)\no localhost:4200 en demo" as front {
+  node "Node.js + Express 4.21\n<<entorno de ejecución>>" as node {
+    artifact "controlprendario-frontend\n(dist/ - build Angular SSR)" as dist
+  }
+}
+
+node "Servidor de aplicaciones\n<<dispositivo>>" as appsrv {
+  node "JVM - Java 17\n<<entorno de ejecución>>" as jvm {
+    node "Spring Boot 3.3.5\nTomcat embebido :8080" as boot {
+      artifact "prendario-0.0.1-SNAPSHOT.jar" as jar
+      artifact "documento_empeno.jasper\ndocumento_maquina.jasper" as jasper
+      artifact "Swagger UI / OpenAPI\n(/swagger-ui.html)" as swagger
+    }
+  }
+}
+
+node "TiDB Cloud\n<<servicio administrado>>\nAWS us-east-1" as cloud {
+  database "Base de datos\ncontrolprendario\n(compatible MySQL 8)" as db
+}
+
+browser --> front : HTTPS\n(descarga de la SPA)
+spa --> boot : HTTPS / REST JSON\n/api/** (CORS)
+boot --> visor : application/pdf\n(contratos y recibos)
+jvm --> db : JDBC (MySQL Connector/J 8.3)\nTCP 4000 / TLS
+
+note bottom of jvm
+  Tarea programada ResumenPrestamos
+  cron "0 0 1 * * *" zona America/Bogota
+  (recalcula resúmenes de préstamos)
+end note
+
+note right of pc
+  Usuarios: Gerente y Empleado
+  Un usuario concurrente
+  Impresión y firma física fuera del sistema
+end note
+@enduml

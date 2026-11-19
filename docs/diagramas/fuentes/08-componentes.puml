@@ -1,0 +1,139 @@
+@startuml 08-componentes
+' Diagrama de componentes - Control Prendario (backend controlprendario-api)
+' Fuente: paquetes controller, service, repository, scheduler, config del codigo
+title Control Prendario - Diagrama de componentes
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam componentStyle uml2
+skinparam component {
+  BackgroundColor #EAF2F2
+  BorderColor #2F6F6F
+}
+skinparam package {
+  BorderColor #7A8A99
+}
+left to right direction
+
+component "Frontend Angular\n(controlprendario-frontend)" as FE <<sistema externo>>
+database "TiDB Cloud\n(MySQL)" as DB
+interface "API REST\nHTTP/JSON" as API
+interface "PDF\napplication/pdf" as PDF
+
+package "controlprendario-api (Spring Boot)" {
+
+  package "Capa de presentación (controller)" {
+    component "ClienteController\n/api/clientes" as CC
+    component "VehicleController\n/api/vehicles" as VC
+    component "PrestamoController\n/api/prestamos" as PC
+    component "PrestamoMaquinaController\n/api/prestamos-maquinas" as PMC
+    component "PagoController\n/api/pagos" as PgC
+    component "PagoMaquinaController\n/api/pagos-maquinas" as PgMC
+    component "MovimientoController\n/api/movimientos" as MC
+    component "ReporteController\n/api/reportes" as RC
+    component "PublicPrestamoController\n/api/public/prestamos" as PPC
+  }
+
+  package "Capa de negocio (service)" {
+    component "ClienteService" as CS
+    component "VehicleService" as VS
+    component "PrestamoService" as PS
+    component "PrestamoMaquinaService" as PMS
+    component "PagoService" as PgS
+    component "PagoMaquinaService" as PgMS
+    component "CalculoInteresService" as CIS
+    component "CalculoInteresMaquinaService" as CIMS
+    component "MovimientoService" as MS
+    component "ReporteService\n(JasperReports + iText)" as RS
+  }
+
+  package "Automatización (scheduler)" {
+    component "ResumenPrestamos\n@Scheduled 01:00" as SCH
+  }
+
+  package "Capa de persistencia (repository - Spring Data JPA)" {
+    component "ClienteRepository" as CR
+    component "VehicleRepository" as VR
+    component "PrestamoRepository" as PR
+    component "PrestamoMaquinaRepository" as PMR
+    component "PagoRepository" as PgR
+    component "PagoMaquinaRepository" as PgMR
+    component "MovimientoRepository" as MR
+  }
+
+  package "Configuración (config)" {
+    component "WebConfig (CORS)" as WC
+    component "SwaggerConfig (OpenAPI)" as SC
+  }
+
+}
+
+FE ..> API : usa
+FE ..> PDF : abre en navegador
+API - CC
+API - VC
+API - PC
+API - PMC
+API - PgC
+API - PgMC
+API - MC
+API - PPC
+PDF - RC
+
+CC --> CS
+VC --> VS
+PC --> PS
+PC --> PMS
+PC --> PgS
+PC --> PgMS
+PMC --> PMS
+PMC --> PgMS
+PgC --> PgS
+PgC --> PgMS
+PgMC --> PgMS
+MC --> MS
+RC --> RS
+PPC --> PS
+
+PS --> CS
+PS --> VS
+PMS --> CS
+PgS --> CIS
+PgMS --> CIMS
+SCH --> PS
+SCH --> PgS
+SCH --> PMS
+SCH --> PgMS
+
+CS --> CR
+CS --> PR
+CS --> PMR
+CS --> PgR
+CS --> PgMR
+VS --> VR
+PS --> PR
+PMS --> PMR
+PgS --> PgR
+PgS --> PR
+PgMS --> PgMR
+PgMS --> PMR
+CIS --> PgR
+CIMS --> PgMR
+MS --> MR
+MS --> PgR
+MS --> PgMR
+MS --> PR
+MS --> PMR
+RS --> PR
+RS --> PMR
+RS --> PgR
+RS --> PgMR
+
+CR --> DB : JDBC
+VR --> DB
+PR --> DB
+PMR --> DB
+PgR --> DB
+PgMR --> DB
+MR --> DB
+@enduml

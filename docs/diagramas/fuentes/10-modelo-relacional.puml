@@ -1,0 +1,149 @@
+@startuml 10-modelo-relacional
+' Modelo relacional - Control Prendario
+' Fuente: docs/10-modelo-relacional.sql (DDL generado por Hibernate 6.5 a partir de las entidades JPA)
+title Control Prendario - Modelo relacional
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #2F6F6F
+  HeaderBackgroundColor #EAF2F2
+}
+hide circle
+hide methods
+hide stereotype
+
+!define PK(x) <b><color:#B07A2A>PK</color> x</b>
+!define FK(x) <color:#2F6F6F>FK</color> x
+!define UQ(x) <color:#7A3E9D>UQ</color> x
+
+entity clientes {
+  PK(id_cliente) : BIGINT AUTO_INCREMENT
+  --
+  tipo_documento : ENUM('CEDULA','DNI','PASAPORTE')
+  UQ(numero_documento) : VARCHAR(255)
+  nombres : VARCHAR(255)
+  apellidos : VARCHAR(255)
+  fecha_nacimiento : DATE
+  direccion : VARCHAR(255)
+  ciudad : VARCHAR(255)
+  telefono : VARCHAR(255)
+  email : VARCHAR(255)
+  fecha_registro : DATETIME(6)
+}
+
+entity vehiculos {
+  PK(id_vehiculo) : BIGINT AUTO_INCREMENT
+  --
+  tipo_vehiculo : ENUM('AUTOMOVIL','CAMION','CAMIONETA','MOTOCICLETA')
+  marca : VARCHAR(255)
+  linea : VARCHAR(255)
+  modelo : INTEGER
+  UQ(placa) : VARCHAR(255)
+  cilindraje : INTEGER
+  color : VARCHAR(255)
+  numero_motor : VARCHAR(255)
+  numero_chasis : VARCHAR(255)
+  sitio_matricula : VARCHAR(255)
+  fecha_matricula : DATE
+  propietario : VARCHAR(255)
+  numero_documento_propietario : VARCHAR(255)
+  fecha_registro : DATETIME(6)
+}
+
+entity prestamos {
+  PK(id_prestamo) : BIGINT AUTO_INCREMENT
+  --
+  FK(id_cliente) : BIGINT NULL
+  FK(id_vehiculo) : BIGINT NULL
+  fecha_prestamo : DATETIME(6)
+  fecha_vencimiento : DATETIME(6)
+  monto_prestamo : DECIMAL(38,2)
+  tasa_interes : DECIMAL(38,2)
+  estado_prestamo : ENUM('ACTIVO','PAGADO','PENDIENTE','VENCIDO')
+  observaciones : VARCHAR(255)
+  interes_total : DECIMAL(38,2)
+  capital_pagado : DECIMAL(38,2)
+  interes_pagado : DECIMAL(38,2)
+  interes_pendiente : DECIMAL(38,2)
+  capital_pendiente : DECIMAL(38,2)
+}
+
+entity prestamos_maquinas {
+  PK(id_prestamo_maquina) : BIGINT AUTO_INCREMENT
+  --
+  FK(id_cliente) : BIGINT NULL
+  tipo_maquina : VARCHAR(255)
+  marca : VARCHAR(255)
+  fecha_prestamo : DATETIME(6)
+  fecha_vencimiento : DATE
+  monto_prestamo : DECIMAL(38,2)
+  tasa_interes : DECIMAL(38,2)
+  estado_prestamo : ENUM('ACTIVO','PAGADO','PENDIENTE','VENCIDO')
+  observaciones : VARCHAR(255)
+  interes_total : DECIMAL(38,2)
+  capital_pagado : DECIMAL(38,2)
+  interes_pagado : DECIMAL(38,2)
+  interes_pendiente : DECIMAL(38,2)
+  capital_pendiente : DECIMAL(38,2)
+}
+
+entity pagos {
+  PK(id_pago) : BIGINT AUTO_INCREMENT
+  --
+  FK(id_prestamo) : BIGINT NOT NULL
+  fecha_pago : DATETIME(6)
+  monto_pagado : DECIMAL(12,2) NOT NULL
+  tipo_pago : ENUM('CAPITAL','INTERES','MORA')
+  metodo_pago : ENUM('EFECTIVO','TARJETA','TRANSFERENCIA')
+  observaciones : TEXT
+  estado_pago : ENUM('ACTIVO','CORREGIDO')
+  fecha_correccion : DATETIME(6)
+  motivo_correccion : VARCHAR(1000)
+  corregido_por_pago_id : BIGINT
+  reemplaza_pago_id : BIGINT
+}
+
+entity pagos_maquinas {
+  PK(id_pago_maquina) : BIGINT AUTO_INCREMENT
+  --
+  FK(id_prestamo_maquina) : BIGINT NOT NULL
+  fecha_pago : DATETIME(6)
+  monto_pagado : DECIMAL(12,2) NOT NULL
+  tipo_pago : ENUM('CAPITAL','INTERES','MORA')
+  metodo_pago : ENUM('EFECTIVO','TARJETA','TRANSFERENCIA')
+  observaciones : TEXT
+  estado_pago : ENUM('ACTIVO','CORREGIDO')
+  fecha_correccion : DATETIME(6)
+  motivo_correccion : VARCHAR(1000)
+  corregido_por_pago_id : BIGINT
+  reemplaza_pago_id : BIGINT
+}
+
+entity movimientos {
+  PK(id_movimiento) : BIGINT AUTO_INCREMENT
+  --
+  fecha_movimiento : DATETIME(6)
+  tipo_movimiento : ENUM('ENTRADA','SALIDA') NOT NULL
+  monto : DECIMAL(12,2) NOT NULL
+}
+
+clientes ||..o{ prestamos : "id_cliente"
+vehiculos ||..o{ prestamos : "id_vehiculo"
+clientes ||..o{ prestamos_maquinas : "id_cliente"
+prestamos ||--o{ pagos : "id_prestamo"
+prestamos_maquinas ||--o{ pagos_maquinas : "id_prestamo_maquina"
+
+note bottom of movimientos
+  Tabla independiente (sin FK).
+  Alimenta el balance administrativo.
+end note
+note right of pagos
+  corregido_por_pago_id y reemplaza_pago_id
+  referencian otro registro de la misma tabla
+  (trazabilidad de correcciones, RF-19).
+  No tienen FK física en la base de datos.
+end note
+@enduml

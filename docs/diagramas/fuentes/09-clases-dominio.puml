@@ -1,0 +1,180 @@
+@startuml 09-clases-dominio
+' Diagrama de clases de dominio - Control Prendario
+' Fuente: paquete control.prendario.model
+title Control Prendario - Diagrama de clases (dominio)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #EAF2F2
+  BorderColor #2F6F6F
+}
+hide empty methods
+
+class Cliente <<Entity>> {
+  - idCliente : Long
+  - tipoDocumento : TipoDocumento
+  - numeroDocumento : String {unique}
+  - nombres : String
+  - apellidos : String
+  - fechaNacimiento : LocalDate
+  - direccion : String
+  - ciudad : String
+  - telefono : String
+  - email : String
+  - fechaRegistro : LocalDateTime
+}
+
+class Vehicle <<Entity>> {
+  - idVehiculo : Long
+  - tipoVehiculo : TipoVehiculo
+  - marca : String
+  - linea : String
+  - modelo : Integer
+  - placa : String {unique}
+  - cilindraje : Integer
+  - color : String
+  - numeroMotor : String
+  - numeroChasis : String
+  - sitioMatricula : String
+  - fechaMatricula : Date
+  - propietario : String
+  - numeroDocumentoPropietario : String
+  - fechaRegistro : Date
+}
+
+class Prestamo <<Entity>> {
+  - idPrestamo : Long
+  - fechaPrestamo : LocalDateTime
+  - fechaVencimiento : LocalDateTime
+  - montoPrestamo : BigDecimal
+  - tasaInteres : BigDecimal = 5.0
+  - estadoPrestamo : EstadoPrestamo
+  - observaciones : String
+  - interesTotal : BigDecimal
+  - capitalPagado : BigDecimal
+  - interesPagado : BigDecimal
+  - interesPendiente : BigDecimal
+  - capitalPendiente : BigDecimal
+  # onCreate() : void
+}
+
+class PrestamoMaquina <<Entity>> {
+  - idPrestamoMaquina : Long
+  - tipoMaquina : String
+  - marcaMaquina : String
+  - fechaPrestamo : LocalDateTime
+  - fechaVencimiento : LocalDate
+  - montoPrestamo : BigDecimal
+  - tasaInteres : BigDecimal = 5.0
+  - estadoPrestamo : EstadoPrestamo
+  - observaciones : String
+  - interesTotal : BigDecimal
+  - capitalPagado : BigDecimal
+  - interesPagado : BigDecimal
+  - interesPendiente : BigDecimal
+  - capitalPendiente : BigDecimal
+  # onCreate() : void
+}
+
+class Pago <<Entity>> {
+  - idPago : Long
+  - fechaPago : LocalDateTime
+  - montoPagado : BigDecimal
+  - tipoPago : TipoPago
+  - metodoPago : MetodoPago
+  - observaciones : String
+  - estadoPago : EstadoPago
+  - fechaCorreccion : LocalDateTime
+  - motivoCorreccion : String
+  - corregidoPorPagoId : Long
+  - reemplazaPagoId : Long
+  # onCreate() : void
+}
+
+class PagoMaquina <<Entity>> {
+  - idPagoMaquina : Long
+  - fechaPago : LocalDateTime
+  - montoPagado : BigDecimal
+  - tipoPago : TipoPago
+  - metodoPago : MetodoPago
+  - observaciones : String
+  - estadoPago : EstadoPago
+  - fechaCorreccion : LocalDateTime
+  - motivoCorreccion : String
+  - corregidoPorPagoId : Long
+  - reemplazaPagoId : Long
+  # onCreate() : void
+}
+
+class Movimiento <<Entity>> {
+  - idMovimiento : Long
+  - fechaMovimiento : LocalDateTime
+  - tipoMovimiento : TipoMovimiento
+  - monto : BigDecimal
+  # onCreate() : void
+}
+
+enum TipoDocumento {
+  DNI
+  PASAPORTE
+  CEDULA
+}
+enum TipoVehiculo {
+  AUTOMOVIL
+  CAMIONETA
+  MOTOCICLETA
+  CAMION
+}
+enum EstadoPrestamo {
+  ACTIVO
+  PAGADO
+  VENCIDO
+  PENDIENTE
+}
+enum EstadoPago {
+  ACTIVO
+  CORREGIDO
+}
+enum "Pago.TipoPago" as TipoPago {
+  CAPITAL
+  INTERES
+  MORA
+}
+enum "Pago.MetodoPago" as MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA
+}
+enum "Movimiento.TipoMovimiento" as TipoMovimiento {
+  ENTRADA
+  SALIDA
+}
+
+Cliente "0..1" <-- "0..*" Prestamo : cliente
+Vehicle "0..1" <-- "0..*" Prestamo : vehiculo (garantía)
+Cliente "0..1" <-- "0..*" PrestamoMaquina : cliente
+Prestamo "1" o-- "0..*" Pago : pagos
+PrestamoMaquina "1" <-- "0..*" PagoMaquina : prestamoMaquina
+
+Pago ..> Pago : corregidoPorPagoId /\nreemplazaPagoId
+
+Cliente ..> TipoDocumento
+Vehicle ..> TipoVehiculo
+Prestamo ..> EstadoPrestamo
+PrestamoMaquina ..> EstadoPrestamo
+Pago ..> TipoPago
+Pago ..> MetodoPago
+Pago ..> EstadoPago
+PagoMaquina ..> TipoPago
+PagoMaquina ..> MetodoPago
+PagoMaquina ..> EstadoPago
+Movimiento ..> TipoMovimiento
+
+note bottom of Movimiento
+  Registro administrativo independiente.
+  Se combina con préstamos y pagos
+  para calcular el balance (RN-16).
+end note
+@enduml

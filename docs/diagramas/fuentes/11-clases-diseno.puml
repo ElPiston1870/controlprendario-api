@@ -1,0 +1,226 @@
+@startuml 11-clases-diseno
+' Diagrama de clases de diseno (capas) - Control Prendario
+' Fuente: paquetes controller, service, repository, scheduler, DTO del codigo
+title Control Prendario - Diagrama de clases de diseño (controladores, servicios, repositorios)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #EAF2F2
+  BorderColor #2F6F6F
+}
+skinparam package {
+  BorderColor #7A8A99
+}
+hide empty members
+
+package controller <<Rectangle>> {
+  class ClienteController <<RestController>> {
+    + crearCliente(Cliente) : ResponseEntity<Cliente>
+    + listarClientes() : ResponseEntity<List<Cliente>>
+    + buscarClientes(nombre, numeroDocumento)
+    + obtenerCliente(id)
+    + consultarHistorial(id) : ResponseEntity<HistorialClienteDTO>
+    + actualizarCliente(id, Cliente)
+    + eliminarCliente(id)
+  }
+  class PrestamoController <<RestController>> {
+    + createPrestamo(...)
+    + getAllPrestamosAndMaquinas()
+    + getPrestamoById(id)
+    + updatePrestamo(id, PrestamoDTO)
+    + deletePrestamo(id)
+    + buscarPrestamos(termino, numeroDocumento)
+    + getPrestamosVencidos()
+    + obtenerUltimoIdPrestamo()
+  }
+  class PagoController <<RestController>> {
+    + obtenerTodosPagos()
+    + crearPago(Pago)
+    + aplicarDescuentoInteres(idPrestamo, monto)
+    + corregirPago(idPago, CorreccionPagoDTO)
+  }
+  class MovimientoController <<RestController>> {
+    + crearMovimiento(Movimiento)
+    + obtenerMovimientos()
+    + obtenerBalanceCompleto() : Map<String, BigDecimal>
+  }
+  class ReporteController <<RestController>> {
+    + generarDocumentoEmpeno(idPrestamo) : byte[]
+    + generarDocumentoEmpenoMaquina(id) : byte[]
+    + generarReciboPago(idPago) : byte[]
+    + generarReciboPagoMaquina(id) : byte[]
+  }
+  class "VehicleController\nPrestamoMaquinaController\nPagoMaquinaController\nPublicPrestamoController" as OtrosCtrl <<RestController>>
+}
+
+package service <<Rectangle>> {
+  class ClienteService <<Service>> {
+    + guardarCliente(Cliente) : Cliente
+    + obtenerTodos() : List<Cliente>
+    + obtenerPorId(Long) : Cliente
+    + consultarHistorial(Long) : HistorialClienteDTO
+    + existeDocumento(String) : boolean
+    + actualizarCliente(Long, Cliente) : Cliente
+    + eliminarCliente(Long) : boolean
+    + buscar(String, String) : List<Cliente>
+  }
+  class VehicleService <<Service>> {
+    + saveVehicle(VehicleDTO) : Vehicle
+    + getVehicleById(Long) : Vehicle
+    + updateVehicle(VehicleDTO) : Vehicle
+    + existsByPlaca(String) : boolean
+    + findByPlaca(String) : Optional<Vehicle>
+  }
+  class PrestamoService <<Service>> {
+    + savePrestamo(PrestamoDTO) : Prestamo
+    + getAllPrestamos() : List<Prestamo>
+    + getPrestamoById(Long) : Prestamo
+    + updatePrestamo(Long, PrestamoDTO) : Prestamo
+    + deletePrestamo(Long) : void
+    + buscarPorFiltros(String, String) : List<Prestamo>
+    + findPrestamosVencidos() : List<Prestamo>
+    + getUltimoIdPrestamo() : Long
+  }
+  class PrestamoMaquinaService <<Service>> {
+    + crearPrestamoMaquina(PrestamoMaquinaDTO)
+    + actualizarPrestamoMaquina(Long, PrestamoMaquinaDTO)
+    + obtenerPrestamosVencidos()
+    + buscarPorFiltros(String, String)
+  }
+  class PagoService <<Service>> {
+    + crearPago(Pago) : Pago
+    + obtenerPagosPorPrestamo(Long) : List<Pago>
+    + corregirPago(Long, CorreccionPagoDTO) : Pago
+    + aplicarDescuentoInteres(Long, BigDecimal) : Pago
+    + obtenerResumenPagos(Long) : void
+    - validarCorreccion(CorreccionPagoDTO) : void
+  }
+  class PagoMaquinaService <<Service>> {
+    + crearPago(PagoMaquina) : PagoMaquina
+    + corregirPago(Long, CorreccionPagoDTO) : PagoMaquina
+    + aplicarDescuentoInteres(Long, BigDecimal) : PagoMaquina
+    + obtenerResumenPagos(Long) : Map<String, BigDecimal>
+  }
+  class CalculoInteresService <<Service>> {
+    + calcularInteresPendiente(Prestamo, LocalDate) : BigDecimal
+    - calcularMesesEntreFechas(LocalDate, LocalDate) : int
+  }
+  class CalculoInteresMaquinaService <<Service>> {
+    + calcularInteresPendiente(PrestamoMaquina, LocalDate) : BigDecimal
+    - calcularMesesEntreFechas(LocalDate, LocalDate) : int
+  }
+  class MovimientoService <<Service>> {
+    + crearMovimiento(Movimiento) : Movimiento
+    + obtenerTodosMovimientos() : List<Movimiento>
+    + obtenerBalanceCompleto() : Map<String, BigDecimal>
+  }
+  class ReporteService <<Service>> {
+    + generarDocumentoEmpeno(Long) : byte[]
+    + generarDocumentoEmpenoMaquina(Long) : byte[]
+    + generarReciboPago(Long) : byte[]
+    + generarReciboPagoMaquina(Long) : byte[]
+    - crearPdfRecibo(...) : byte[]
+  }
+}
+
+package scheduler <<Rectangle>> {
+  class ResumenPrestamos <<Component>> {
+    + realizarResumen() : void
+    .. @Scheduled(cron="0 0 1 * * *", zone="America/Bogota") ..
+  }
+}
+
+package repository <<Rectangle>> {
+  interface "JpaRepository<T, ID>" as JpaRepository
+  interface ClienteRepository
+  interface VehicleRepository
+  interface PrestamoRepository
+  interface PrestamoMaquinaRepository
+  interface PagoRepository {
+    + findByPrestamoIdPrestamoOrderByFechaPagoDesc(Long)
+    + findByIdForUpdate(Long) : Optional<Pago>
+    + buscarPorCliente(String) : List<Pago>
+  }
+  interface PagoMaquinaRepository
+  interface MovimientoRepository
+}
+
+package DTO <<Rectangle>> {
+  class PrestamoDTO {
+    - idCliente : Long
+    - vehiculo : VehicleDTO
+    - montoPrestamo : BigDecimal
+    - tasaInteres : BigDecimal
+    - observaciones : String
+    - estadoPrestamo : EstadoPrestamo
+  }
+  class PrestamoMaquinaDTO
+  class VehicleDTO
+  class CorreccionPagoDTO {
+    - montoPagado : BigDecimal
+    - tipoPago : TipoPago
+    - metodoPago : MetodoPago
+    - observaciones : String
+    - motivo : String
+  }
+  class HistorialClienteDTO {
+    - cliente : Cliente
+    - prestamosVehiculares : List<Prestamo>
+    - prestamosMaquinaria : List<PrestamoMaquina>
+    - pagosVehiculares : List<Pago>
+    - pagosMaquinaria : List<PagoMaquina>
+  }
+}
+
+ClienteController --> ClienteService
+PrestamoController --> PrestamoService
+PrestamoController --> PrestamoMaquinaService
+PrestamoController --> PagoService
+PagoController --> PagoService
+PagoController --> PagoMaquinaService
+MovimientoController --> MovimientoService
+ReporteController --> ReporteService
+OtrosCtrl --> VehicleService
+OtrosCtrl --> PrestamoMaquinaService
+OtrosCtrl --> PagoMaquinaService
+
+PrestamoService --> ClienteService
+PrestamoService --> VehicleService
+PrestamoMaquinaService --> ClienteService
+PagoService --> CalculoInteresService
+PagoMaquinaService --> CalculoInteresMaquinaService
+ResumenPrestamos --> PrestamoService
+ResumenPrestamos --> PagoService
+ResumenPrestamos --> PrestamoMaquinaService
+ResumenPrestamos --> PagoMaquinaService
+
+ClienteService --> ClienteRepository
+VehicleService --> VehicleRepository
+PrestamoService --> PrestamoRepository
+PrestamoMaquinaService --> PrestamoMaquinaRepository
+PagoService --> PagoRepository
+PagoService --> PrestamoRepository
+PagoMaquinaService --> PagoMaquinaRepository
+PagoMaquinaService --> PrestamoMaquinaRepository
+CalculoInteresService --> PagoRepository
+CalculoInteresMaquinaService --> PagoMaquinaRepository
+MovimientoService --> MovimientoRepository
+ReporteService --> PrestamoRepository
+ReporteService --> PagoRepository
+
+ClienteRepository --|> JpaRepository
+VehicleRepository --|> JpaRepository
+PrestamoRepository --|> JpaRepository
+PrestamoMaquinaRepository --|> JpaRepository
+PagoRepository --|> JpaRepository
+PagoMaquinaRepository --|> JpaRepository
+MovimientoRepository --|> JpaRepository
+
+PrestamoService ..> PrestamoDTO
+PrestamoDTO *-- VehicleDTO
+PrestamoMaquinaService ..> PrestamoMaquinaDTO
+PagoService ..> CorreccionPagoDTO
+ClienteService ..> HistorialClienteDTO
+@enduml
