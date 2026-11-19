@@ -32,6 +32,9 @@ package "controlprendario-api (Spring Boot)" {
     component "MovimientoController\n/api/movimientos" as MC
     component "ReporteController\n/api/reportes" as RC
     component "PublicPrestamoController\n/api/public/prestamos" as PPC
+    component "AuthController\n/api/auth" as AC
+    component "GarantiaController\n/api/garantias" as GC
+    component "AuditEventController\n/api/auditoria" as AEC
   }
 
   package "Capa de negocio (service)" {
@@ -45,6 +48,10 @@ package "controlprendario-api (Spring Boot)" {
     component "CalculoInteresMaquinaService" as CIMS
     component "MovimientoService" as MS
     component "ReporteService\n(JasperReports + iText)" as RS
+    component "GarantiaInventarioService" as GIS
+    component "JwtService" as JS
+    component "AuditEventService" as AES
+    component "AuditAspect\n(@Aspect)" as AA
   }
 
   package "Automatización (scheduler)" {
@@ -59,11 +66,15 @@ package "controlprendario-api (Spring Boot)" {
     component "PagoRepository" as PgR
     component "PagoMaquinaRepository" as PgMR
     component "MovimientoRepository" as MR
+    component "AuditEventRepository" as AER
   }
 
   package "Configuración (config)" {
     component "WebConfig (CORS)" as WC
     component "SwaggerConfig (OpenAPI)" as SC
+    component "SecurityConfig\n(roles ADMIN / OPERATOR)" as SEC
+    component "JwtAuthenticationFilter" as JAF
+    component "GlobalExceptionHandler" as GEH
   }
 
 }
@@ -78,6 +89,9 @@ API - PgC
 API - PgMC
 API - MC
 API - PPC
+API - AC
+API - GC
+API - AEC
 PDF - RC
 
 CC --> CS
@@ -94,6 +108,12 @@ PgMC --> PgMS
 MC --> MS
 RC --> RS
 PPC --> PS
+AC --> JS
+GC --> GIS
+AEC --> AES
+JAF --> JS
+SEC --> JAF
+AA --> AES : registra operaciones\nde los servicios
 
 PS --> CS
 PS --> VS
@@ -128,6 +148,9 @@ RS --> PR
 RS --> PMR
 RS --> PgR
 RS --> PgMR
+GIS --> PR
+GIS --> PMR
+AES --> AER
 
 CR --> DB : JDBC
 VR --> DB
@@ -136,4 +159,5 @@ PMR --> DB
 PgR --> DB
 PgMR --> DB
 MR --> DB
+AER --> DB
 @enduml

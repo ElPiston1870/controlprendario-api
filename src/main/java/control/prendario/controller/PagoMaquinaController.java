@@ -56,7 +56,6 @@ public class PagoMaquinaController {
                     schema = @Schema(implementation = PagoMaquina.class))
             @RequestBody PagoMaquina pago) {
 
-        System.out.println( "Pago a insertar de maquinas: " +pago);
 
         ResponseEntity<PagoMaquina> respuesta = ResponseEntity.ok(pagoMaquinaService.crearPago(pago));
         pagoMaquinaService.obtenerResumenPagos(pago.getPrestamoMaquina().getIdPrestamoMaquina());

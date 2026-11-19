@@ -8,14 +8,27 @@
 -- Rama feature/yohan. Generación asistida por Claude Code (ver docs/13-uso-ia.md).
 --
 -- Tablas: clientes, vehiculos, prestamos, prestamos_maquinas,
---         pagos, pagos_maquinas, movimientos
+--         pagos, pagos_maquinas, movimientos, auditoria
 -- =====================================================================
 
 CREATE DATABASE IF NOT EXISTS controlprendario
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE controlprendario;
 
+
+create table auditoria (
+    fecha_evento datetime(6) not null,
+    id bigint not null auto_increment,
+    recurso_id bigint,
+    resultado varchar(20) not null,
+    recurso varchar(100) not null,
+    usuario varchar(100) not null,
+    accion varchar(150) not null,
+    primary key (id)
+) engine=InnoDB;
+
 create table clientes (
+    activo bit,
     fecha_nacimiento date,
     fecha_registro datetime(6),
     id_cliente bigint not null auto_increment,
@@ -39,6 +52,7 @@ create table movimientos (
 ) engine=InnoDB;
 
 create table pagos (
+    es_descuento bit,
     monto_pagado decimal(12,2) not null,
     corregido_por_pago_id bigint,
     fecha_correccion datetime(6),
@@ -55,6 +69,7 @@ create table pagos (
 ) engine=InnoDB;
 
 create table pagos_maquinas (
+    es_descuento bit,
     monto_pagado decimal(12,2) not null,
     corregido_por_pago_id bigint,
     fecha_correccion datetime(6),
@@ -71,6 +86,7 @@ create table pagos_maquinas (
 ) engine=InnoDB;
 
 create table prestamos (
+    activo bit,
     capital_pagado decimal(38,2),
     capital_pendiente decimal(38,2),
     interes_pagado decimal(38,2),
@@ -89,6 +105,7 @@ create table prestamos (
 ) engine=InnoDB;
 
 create table prestamos_maquinas (
+    activo bit,
     capital_pagado decimal(38,2),
     capital_pendiente decimal(38,2),
     fecha_vencimiento date,
@@ -108,6 +125,7 @@ create table prestamos_maquinas (
 ) engine=InnoDB;
 
 create table vehiculos (
+    activo bit,
     cilindraje integer,
     fecha_matricula date,
     modelo integer,

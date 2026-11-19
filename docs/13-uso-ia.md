@@ -10,8 +10,8 @@ Este documento declara la herramienta de inteligencia artificial utilizada duran
 |---|---|
 | Herramienta | **Claude Code** (Anthropic), asistente de programación ejecutado en un entorno de nube aislado con acceso al repositorio `controlprendario-api`. |
 | Única herramienta de IA utilizada | Sí. No se utilizaron otras herramientas de IA (ChatGPT, Copilot, Gemini u otras). |
-| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. |
-| Actividades **no** realizadas con IA | Análisis del problema, catálogo de requisitos, historias de usuario base (HU-01 a HU-10, sección 9 del informe), priorización MoSCoW, reglas de negocio, código fuente de la aplicación (backend y frontend), pruebas, cálculo de intereses e informe de avance. Todo esto fue elaborado por el equipo. |
+| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. 3. **Revisión del código y corrección de pendientes del backend** (sección 13.8). |
+| Actividades **no** realizadas con IA | Análisis del problema, catálogo de requisitos, historias de usuario base (HU-01 a HU-10, sección 9 del informe), priorización MoSCoW, reglas de negocio, código fuente base de la aplicación (backend y frontend), funcionalidades RF-01 a RF-24 (incluidas seguridad JWT, auditoría, archivo lógico, inventario de garantías y resumen PDF), cálculo de intereses e informe de avance. Todo esto fue elaborado por el equipo. |
 | Responsable de la interacción | Yohan Bustos (Desarrollador). |
 | Rama de trabajo | `feature/yohan` |
 
@@ -80,7 +80,7 @@ Resultado: los dos documentos de la sección 13.2 (ítems 3, 4 y 5).
 | Fuentes editables | Los `.puml` son texto plano, revisable en un *diff* de Git y modificable por el equipo sin depender de la IA. |
 | Revisión humana | El equipo revisa cada diagrama contra el código antes de integrarlo a la rama principal, y valida criterios de aceptación, estados y responsables propuestos de las historias y tareas (ver lista 13.7). |
 | Aislamiento de la rama | El trabajo se hizo en `feature/yohan`; la IA no tiene permiso para integrar cambios en otras ramas ni para crear *pull requests* sin solicitud explícita. |
-| Sin cambios al software | La IA no modificó archivos de `src/`. Solo agregó archivos en `docs/` y documentos fuera del repositorio. |
+| Cambios al software acotados y probados | Hasta la sección 13.8 la IA no modificó `src/`. Los cambios de código de la sección 13.8 se limitaron a corregir pendientes identificados en la revisión; cada uno se probó con pruebas automáticas y con una ejecución completa de la API contra una base de datos local. |
 | Protección de datos | No se usaron datos reales de clientes. Las credenciales de `application.properties` no se copiaron a la documentación. |
 | Entorno aislado | Claude Code se ejecutó en un contenedor en la nube con acceso solo al repositorio autorizado; los comandos quedaron sujetos al modo de permisos de la sesión. |
 
@@ -88,7 +88,7 @@ Resultado: los dos documentos de la sección 13.2 (ítems 3, 4 y 5).
 
 | Componente | Uso en este proyecto |
 |---|---|
-| **Reglas de negocio** | La IA **no definió ni modificó** reglas de negocio. Las reglas RN-01 a RN-22 son del equipo (informe, sección 8). Los diagramas solo las reflejan donde ya están en el código: unicidad de documento (RN-01) y placa, tasa por defecto 5 % y plazo de 3 meses en `@PrePersist` (RN-07, RN-08), estados del préstamo (RN-22), trazabilidad de correcciones de pagos (RF-19 / RN-17) y movimientos independientes para el balance (RN-16). |
+| **Reglas de negocio** | La IA **no definió ni modificó** reglas de negocio; en la sección 13.8 solo implementó en el código reglas ya definidas por el equipo (RN-01, RN-02, RN-14, RN-16). Las reglas RN-01 a RN-22 son del equipo (informe, sección 8). Los diagramas solo las reflejan donde ya están en el código: unicidad de documento (RN-01) y placa, tasa por defecto 5 % y plazo de 3 meses en `@PrePersist` (RN-07, RN-08), estados del préstamo (RN-22), trazabilidad de correcciones de pagos (RF-19 / RN-17) y movimientos independientes para el balance (RN-16). |
 | **Agentes** | Se usó un único agente (Claude Code en la sesión principal). No se delegaron tareas a subagentes ni se configuraron agentes personalizados. |
 | **Skills** | No se invocaron *skills* de Claude Code ni se agregaron al repositorio. |
 | **Reglas para la IA (CLAUDE.md u otras)** | El repositorio no contiene archivos de instrucciones para la IA. Las restricciones se dieron en los prompts: limitar el uso de IA a los diagramas y trabajar en la rama `feature/yohan`. |
@@ -109,3 +109,38 @@ Antes de integrar los diagramas a la rama principal, el equipo confirma:
 - [ ] Los usuarios de Git se reemplazaron por los nombres de los integrantes y se confirmaron los responsables propuestos.
 
 Revisado por: ____________________   Fecha: ____________
+
+## 13.8 Revisión y corrección del backend
+
+**Prompt 5: revisión de los cambios del equipo**
+
+> Bueno hice unos cambios gigantes al repositorio, en teoria completando las tareas que faltaban, creo que me quedaria faltando unicamente test unitarios, pero eso lo puedo hacer luego. Por favor revisa y verifica teniendo en cuenta el doc y el excel que me diste, creeria que ya esta todo
+
+Resultado: revisión del commit `24bb93c` (RF-20 a RF-24, elaborado por el equipo). La herramienta compiló el proyecto, ejecutó las pruebas y detectó, con pruebas temporales, que el *preflight* CORS era rechazado, que el rol empleado no podía gestionar clientes ni préstamos y que la consulta pública exponía datos personales.
+
+**Prompt 6: corrección de pendientes**
+
+> Quiero pedirte por favor que arregles el resto de cosas faltantes, si es posible, por ahora no pienses en frontend ni me des mas documentancion lo ideal es que el repo este bien para ya poder documentar. Añade lo que dices al repo
+
+Cambios realizados por la herramienta:
+
+| Cambio | Archivos | Requisito / regla |
+|---|---|---|
+| CORS habilitado en Spring Security; `/error` accesible para que los rechazos respondan 403 en lugar de 401 | `config/SecurityConfig.java` | RNF-07 |
+| Permisos por rol: el empleado gestiona clientes, préstamos, pagos, descuentos, correcciones y reportes; solo el gerente registra movimientos y consulta la auditoría | `config/SecurityConfig.java` | RF-21, RN-16 |
+| `/api/public/prestamos` deja de ser público | `config/SecurityConfig.java` | RNF-05 |
+| Descuentos marcados con `es_descuento` y excluidos del dinero recibido en el balance | `model/Pago.java`, `model/PagoMaquina.java`, repositorios y servicios de pago | RF-17, RN-14 |
+| Validación de importe, tipo y préstamo al registrar pagos | `service/PagoService.java`, `service/PagoMaquinaService.java` | HU-04 |
+| Validación de datos obligatorios del cliente y respuesta 409 para documento duplicado | `model/Cliente.java`, `controller/ClienteController.java`, `service/DocumentoDuplicadoException.java` | RN-01, RN-02 |
+| Manejo global de errores (400, 404, 409) | `config/GlobalExceptionHandler.java` | RNF-01 |
+| Corrección de error preexistente: el balance fallaba cuando no había pagos de intereses de maquinaria | repositorios de pago | RF-14 |
+| Configuración por variables de entorno, token de 8 horas y logs sin datos personales | `application.properties` | RNF-05 |
+| Scripts de respaldo y restauración | `scripts/` | RNF-10 |
+| Guía de instalación y operación | `README.md` | — |
+| Pruebas automáticas de los cambios (13 pruebas nuevas) | `SecurityRulesTest`, `PagoValidacionDescuentoTest` | — |
+| Actualización de diagramas y DDL con el esquema nuevo | `docs/` | — |
+
+Verificación: las 24 pruebas del proyecto pasan (`./mvnw test`). Además, la API se ejecutó contra una base MariaDB local y se recorrió el flujo de login, roles, validaciones, préstamo, pago, descuento, balance, auditoría y resumen PDF. Los scripts de respaldo y restauración se probaron con un respaldo, el borrado de la base y su restauración.
+
+- [ ] El equipo revisó los cambios de código de esta sección antes de integrarlos a la rama principal.
+

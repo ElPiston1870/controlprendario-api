@@ -72,6 +72,10 @@ public class Pago {
     @Column(name = "reemplaza_pago_id")
     private Long reemplazaPagoId;
 
+    @Schema(description = "Indica si el registro es un descuento al interés (no es dinero recibido)", example = "false")
+    @Column(name = "es_descuento")
+    private Boolean esDescuento = false;
+
     public enum TipoPago {
         CAPITAL, INTERES, MORA
     }
@@ -87,6 +91,9 @@ public class Pago {
         }
         if (estadoPago == null) {
             estadoPago = EstadoPago.ACTIVO;
+        }
+        if (esDescuento == null) {
+            esDescuento = false;
         }
     }
 }

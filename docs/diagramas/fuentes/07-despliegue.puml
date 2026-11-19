@@ -37,6 +37,7 @@ node "Servidor de aplicaciones\n<<dispositivo>>" as appsrv {
       artifact "prendario-0.0.1-SNAPSHOT.jar" as jar
       artifact "documento_empeno.jasper\ndocumento_maquina.jasper" as jasper
       artifact "Swagger UI / OpenAPI\n(/swagger-ui.html)" as swagger
+      artifact "Spring Security + JWT\n(roles ADMIN / OPERATOR)" as sec
     }
   }
 }
@@ -46,7 +47,7 @@ node "TiDB Cloud\n<<servicio administrado>>\nAWS us-east-1" as cloud {
 }
 
 browser --> front : HTTPS\n(descarga de la SPA)
-spa --> boot : HTTPS / REST JSON\n/api/** (CORS)
+spa --> boot : HTTPS / REST JSON\n/api/** (CORS + Bearer JWT)
 boot --> visor : application/pdf\n(contratos y recibos)
 jvm --> db : JDBC (MySQL Connector/J 8.3)\nTCP 4000 / TLS
 

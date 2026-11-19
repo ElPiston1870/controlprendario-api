@@ -32,6 +32,7 @@ entity clientes {
   telefono : VARCHAR(255)
   email : VARCHAR(255)
   fecha_registro : DATETIME(6)
+  activo : BIT
 }
 
 entity vehiculos {
@@ -51,6 +52,7 @@ entity vehiculos {
   propietario : VARCHAR(255)
   numero_documento_propietario : VARCHAR(255)
   fecha_registro : DATETIME(6)
+  activo : BIT
 }
 
 entity prestamos {
@@ -69,6 +71,7 @@ entity prestamos {
   interes_pagado : DECIMAL(38,2)
   interes_pendiente : DECIMAL(38,2)
   capital_pendiente : DECIMAL(38,2)
+  activo : BIT
 }
 
 entity prestamos_maquinas {
@@ -88,6 +91,7 @@ entity prestamos_maquinas {
   interes_pagado : DECIMAL(38,2)
   interes_pendiente : DECIMAL(38,2)
   capital_pendiente : DECIMAL(38,2)
+  activo : BIT
 }
 
 entity pagos {
@@ -104,6 +108,7 @@ entity pagos {
   motivo_correccion : VARCHAR(1000)
   corregido_por_pago_id : BIGINT
   reemplaza_pago_id : BIGINT
+  es_descuento : BIT
 }
 
 entity pagos_maquinas {
@@ -120,6 +125,7 @@ entity pagos_maquinas {
   motivo_correccion : VARCHAR(1000)
   corregido_por_pago_id : BIGINT
   reemplaza_pago_id : BIGINT
+  es_descuento : BIT
 }
 
 entity movimientos {
@@ -136,6 +142,23 @@ clientes ||..o{ prestamos_maquinas : "id_cliente"
 prestamos ||--o{ pagos : "id_prestamo"
 prestamos_maquinas ||--o{ pagos_maquinas : "id_prestamo_maquina"
 
+entity auditoria {
+  PK(id) : BIGINT AUTO_INCREMENT
+  --
+  fecha_evento : DATETIME(6) NOT NULL
+  usuario : VARCHAR(100) NOT NULL
+  accion : VARCHAR(150) NOT NULL
+  recurso : VARCHAR(100) NOT NULL
+  recurso_id : BIGINT
+  resultado : VARCHAR(20) NOT NULL
+}
+
+note bottom of auditoria
+  Registro de operaciones (RN-21).
+  Sin FK: recurso + recurso_id
+  identifican el registro afectado.
+end note
+
 note bottom of movimientos
   Tabla independiente (sin FK).
   Alimenta el balance administrativo.
@@ -145,5 +168,7 @@ note right of pagos
   referencian otro registro de la misma tabla
   (trazabilidad de correcciones, RF-19).
   No tienen FK física en la base de datos.
+  es_descuento = 1: descuento al interés,
+  no es dinero recibido (RN-14).
 end note
 @enduml

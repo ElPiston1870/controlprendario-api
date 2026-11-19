@@ -252,7 +252,7 @@ public class ReporteService {
         }
 
         if (count == 0) {
-            PdfPCell empty = new PdfPCell(new Phrase("No hay préstamos activos registrados.", cellFont));
+            PdfPCell empty = new PdfPCell(new Phrase("No hay préstamos registrados.", cellFont));
             empty.setColspan(8);
             empty.setHorizontalAlignment(Element.ALIGN_CENTER);
             empty.setPadding(10);

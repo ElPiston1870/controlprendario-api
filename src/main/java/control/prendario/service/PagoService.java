@@ -32,9 +32,12 @@ public class PagoService {
 
     @Transactional
     public Pago crearPago(Pago pago) {
+        validarNuevoPago(pago == null ? null : pago.getPrestamo() == null ? null : pago.getPrestamo().getIdPrestamo(),
+                pago == null ? null : pago.getMontoPagado(), pago == null ? null : pago.getTipoPago());
         Prestamo prestamo = prestamoRepository.findById(pago.getPrestamo().getIdPrestamo())
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Préstamo no encontrado"));
         pago.setEstadoPago(EstadoPago.ACTIVO);
+        pago.setEsDescuento(false);
         pago.setFechaCorreccion(null);
         pago.setMotivoCorreccion(null);
         pago.setCorregidoPorPagoId(null);
@@ -100,6 +103,7 @@ public class PagoService {
         reemplazo.setReemplazaPagoId(original.getIdPago());
         reemplazo.setMotivoCorreccion(correccion.getMotivo().trim());
         reemplazo.setEstadoPago(EstadoPago.ACTIVO);
+        reemplazo.setEsDescuento(Boolean.TRUE.equals(original.getEsDescuento()));
         reemplazo = pagoRepository.save(reemplazo);
 
         original.setEstadoPago(EstadoPago.CORREGIDO);
@@ -110,6 +114,18 @@ public class PagoService {
 
         obtenerResumenPagos(original.getPrestamo().getIdPrestamo());
         return reemplazo;
+    }
+
+    static void validarNuevoPago(Long idPrestamo, BigDecimal monto, Pago.TipoPago tipoPago) {
+        if (idPrestamo == null) {
+            throw new IllegalArgumentException("Debe indicar el préstamo al que pertenece el pago");
+        }
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto del pago debe ser mayor que cero");
+        }
+        if (tipoPago == null) {
+            throw new IllegalArgumentException("Debe indicar si el pago es a capital o a intereses");
+        }
     }
 
     private void validarCorreccion(CorreccionPagoDTO correccion) {
@@ -148,6 +164,7 @@ public class PagoService {
         pagoDescuento.setTipoPago(Pago.TipoPago.INTERES);
         pagoDescuento.setFechaPago(LocalDateTime.now());
         pagoDescuento.setObservaciones("Descuento aplicado al interés pendiente");
+        pagoDescuento.setEsDescuento(true);
 
         Pago descuentoGuardado = pagoRepository.save(pagoDescuento);
         obtenerResumenPagos(idPrestamo);

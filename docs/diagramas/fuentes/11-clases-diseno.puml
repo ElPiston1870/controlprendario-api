@@ -53,6 +53,15 @@ package controller <<Rectangle>> {
     + generarReciboPagoMaquina(id) : byte[]
   }
   class "VehicleController\nPrestamoMaquinaController\nPagoMaquinaController\nPublicPrestamoController" as OtrosCtrl <<RestController>>
+  class AuthController <<RestController>> {
+    + login(LoginRequest) : TokenResponse
+  }
+  class GarantiaController <<RestController>> {
+    + consultarInventario() : List<GarantiaInventarioDTO>
+  }
+  class AuditEventController <<RestController>> {
+    + consultar(pagina, tamano) : Page<AuditEvent>
+  }
 }
 
 package service <<Rectangle>> {
@@ -60,6 +69,7 @@ package service <<Rectangle>> {
     + guardarCliente(Cliente) : Cliente
     + obtenerTodos() : List<Cliente>
     + obtenerPorId(Long) : Cliente
+    + obtenerActivoPorId(Long) : Cliente
     + consultarHistorial(Long) : HistorialClienteDTO
     + existeDocumento(String) : boolean
     + actualizarCliente(Long, Cliente) : Cliente
@@ -95,6 +105,7 @@ package service <<Rectangle>> {
     + corregirPago(Long, CorreccionPagoDTO) : Pago
     + aplicarDescuentoInteres(Long, BigDecimal) : Pago
     + obtenerResumenPagos(Long) : void
+    ~ {static} validarNuevoPago(Long, BigDecimal, TipoPago) : void
     - validarCorreccion(CorreccionPagoDTO) : void
   }
   class PagoMaquinaService <<Service>> {
@@ -116,7 +127,22 @@ package service <<Rectangle>> {
     + obtenerTodosMovimientos() : List<Movimiento>
     + obtenerBalanceCompleto() : Map<String, BigDecimal>
   }
+  class GarantiaInventarioService <<Service>> {
+    + consultarInventario() : List<GarantiaInventarioDTO>
+  }
+  class JwtService <<Service>> {
+    + generarToken(Authentication) : String
+    + obtenerUsuario(String) : String
+  }
+  class AuditEventService <<Service>> {
+    + registrar(usuario, accion, recurso, recursoId, resultado) : void
+    + consultar(int, int) : Page<AuditEvent>
+  }
+  class AuditAspect <<Aspect>> {
+    + auditarMutaciones(ProceedingJoinPoint) : Object
+  }
   class ReporteService <<Service>> {
+    + generarResumenPrestamosPdf() : byte[]
     + generarDocumentoEmpeno(Long) : byte[]
     + generarDocumentoEmpenoMaquina(Long) : byte[]
     + generarReciboPago(Long) : byte[]
@@ -145,6 +171,7 @@ package repository <<Rectangle>> {
   }
   interface PagoMaquinaRepository
   interface MovimientoRepository
+  interface AuditEventRepository
 }
 
 package DTO <<Rectangle>> {
@@ -217,6 +244,14 @@ PrestamoMaquinaRepository --|> JpaRepository
 PagoRepository --|> JpaRepository
 PagoMaquinaRepository --|> JpaRepository
 MovimientoRepository --|> JpaRepository
+AuditEventRepository --|> JpaRepository
+AuthController --> JwtService
+GarantiaController --> GarantiaInventarioService
+AuditEventController --> AuditEventService
+AuditAspect --> AuditEventService
+AuditEventService --> AuditEventRepository
+GarantiaInventarioService --> PrestamoRepository
+GarantiaInventarioService --> PrestamoMaquinaRepository
 
 PrestamoService ..> PrestamoDTO
 PrestamoDTO *-- VehicleDTO

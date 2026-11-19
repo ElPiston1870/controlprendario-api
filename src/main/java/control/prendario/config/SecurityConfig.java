@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -104,6 +105,7 @@ public class SecurityConfig {
             DaoAuthenticationProvider authenticationProvider
     ) throws Exception {
         return http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
@@ -111,20 +113,19 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, exception) ->
                                 response.sendError(401, "Autenticación requerida")))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/login", "/api/public/**",
+                        // Preflight CORS del navegador (no lleva token)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/error", "/api/auth/login",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/clientes/*/historial")
-                        .hasAnyRole("ADMIN", "OPERATOR")
-                        .requestMatchers(HttpMethod.GET, "/api/garantias/inventario")
-                        .hasAnyRole("ADMIN", "OPERATOR")
-                        .requestMatchers(HttpMethod.GET, "/api/reportes/**")
-                        .hasAnyRole("ADMIN", "OPERATOR")
-                        .requestMatchers(HttpMethod.GET, "/api/pagos", "/api/pagos/**",
-                                "/api/pagos-maquinas", "/api/pagos-maquinas/**")
-                        .hasAnyRole("ADMIN", "OPERATOR")
-                        .requestMatchers(HttpMethod.POST, "/api/pagos", "/api/pagos-maquinas")
-                        .hasAnyRole("ADMIN", "OPERATOR")
-                        .anyRequest().hasRole("ADMIN"))
+                        // RN-16 / RF-21: solo el gerente registra movimientos independientes
+                        .requestMatchers(HttpMethod.POST, "/api/movimientos", "/api/movimientos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/movimientos", "/api/movimientos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/movimientos", "/api/movimientos/**").hasRole("ADMIN")
+                        // La auditoría es una consulta de control del gerente
+                        .requestMatchers("/api/auditoria", "/api/auditoria/**").hasRole("ADMIN")
+                        // Gerente y empleado gestionan clientes, garantías, préstamos, pagos,
+                        // descuentos, correcciones, contratos y consultas (informe, sección 4.3)
+                        .anyRequest().hasAnyRole("ADMIN", "OPERATOR"))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

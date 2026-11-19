@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Respaldos de base de datos ###
+backups/

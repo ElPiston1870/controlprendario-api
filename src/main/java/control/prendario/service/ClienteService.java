@@ -34,7 +34,7 @@ public class ClienteService {
 
     public Cliente guardarCliente(Cliente cliente) {
         if (existeDocumento(cliente.getNumeroDocumento())) {
-            throw new RuntimeException("Ya existe un cliente con ese número de documento");
+            throw new DocumentoDuplicadoException("Ya existe un cliente con ese número de documento");
         }
         cliente.setFechaRegistro(LocalDateTime.now());
         cliente.setActivo(true);
@@ -92,7 +92,7 @@ public class ClienteService {
         // Validar que si cambia el número de documento, no exista ya
         if (!clienteExistente.getNumeroDocumento().equals(clienteActualizado.getNumeroDocumento())
                 && existeDocumento(clienteActualizado.getNumeroDocumento())) {
-            throw new RuntimeException("Ya existe un cliente con ese número de documento");
+            throw new DocumentoDuplicadoException("Ya existe un cliente con ese número de documento");
         }
 
         // Actualizar los campos

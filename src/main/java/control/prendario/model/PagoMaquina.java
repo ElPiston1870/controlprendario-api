@@ -70,6 +70,10 @@ public class PagoMaquina {
     @Column(name = "reemplaza_pago_id")
     private Long reemplazaPagoId;
 
+    @Schema(description = "Indica si el registro es un descuento al interés (no es dinero recibido)", example = "false")
+    @Column(name = "es_descuento")
+    private Boolean esDescuento = false;
+
     @PrePersist
     protected void onCreate() {
         if (fechaPago == null) {
@@ -77,6 +81,9 @@ public class PagoMaquina {
         }
         if (estadoPago == null) {
             estadoPago = EstadoPago.ACTIVO;
+        }
+        if (esDescuento == null) {
+            esDescuento = false;
         }
     }
 }

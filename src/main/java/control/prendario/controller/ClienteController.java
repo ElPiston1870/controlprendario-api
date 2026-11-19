@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<Cliente> crearCliente(
             @Parameter(description = "Datos del cliente a crear", required = true)
-            @RequestBody Cliente cliente) {
+            @Valid @RequestBody Cliente cliente) {
         return ResponseEntity.ok(clienteService.guardarCliente(cliente));
     }
 
@@ -171,7 +172,7 @@ public class ClienteController {
             @Parameter(description = "ID del cliente a actualizar", required = true)
             @PathVariable Long id,
             @Parameter(description = "Nuevos datos del cliente", required = true)
-            @RequestBody Cliente cliente) {
+            @Valid @RequestBody Cliente cliente) {
         return ResponseEntity.ok(clienteService.actualizarCliente(id, cliente));
     }
 

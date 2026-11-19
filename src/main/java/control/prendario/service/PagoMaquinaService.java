@@ -27,9 +27,13 @@ public class PagoMaquinaService {
 
     @Transactional
     public PagoMaquina crearPago(PagoMaquina pago) {
+        PagoService.validarNuevoPago(
+                pago == null ? null : pago.getPrestamoMaquina() == null ? null : pago.getPrestamoMaquina().getIdPrestamoMaquina(),
+                pago == null ? null : pago.getMontoPagado(), pago == null ? null : pago.getTipoPago());
         PrestamoMaquina prestamoMaquina = prestamoMaquinaRepository.findById(pago.getPrestamoMaquina().getIdPrestamoMaquina())
-                .orElseThrow(() -> new RuntimeException("Préstamo de máquina no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Préstamo de máquina no encontrado"));
         pago.setEstadoPago(EstadoPago.ACTIVO);
+        pago.setEsDescuento(false);
         pago.setFechaCorreccion(null);
         pago.setMotivoCorreccion(null);
         pago.setCorregidoPorPagoId(null);
@@ -95,6 +99,7 @@ public class PagoMaquinaService {
         pagoDescuento.setMontoPagado(montoInteres);
         pagoDescuento.setTipoPago(Pago.TipoPago.INTERES);
         pagoDescuento.setObservaciones("Descuento aplicado al interés");
+        pagoDescuento.setEsDescuento(true);
 
         PagoMaquina descuentoGuardado = pagoMaquinaRepository.save(pagoDescuento);
         obtenerResumenPagos(idPrestamoMaquina);
@@ -121,6 +126,7 @@ public class PagoMaquinaService {
         reemplazo.setReemplazaPagoId(original.getIdPagoMaquina());
         reemplazo.setMotivoCorreccion(correccion.getMotivo().trim());
         reemplazo.setEstadoPago(EstadoPago.ACTIVO);
+        reemplazo.setEsDescuento(Boolean.TRUE.equals(original.getEsDescuento()));
         reemplazo = pagoMaquinaRepository.save(reemplazo);
 
         original.setEstadoPago(EstadoPago.CORREGIDO);

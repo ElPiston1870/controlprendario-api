@@ -30,8 +30,9 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
             "AND p.tipoPago = :tipoPago AND (p.estadoPago IS NULL OR p.estadoPago <> control.prendario.model.EstadoPago.CORREGIDO)")
     BigDecimal sumMontoPagadoByPrestamoAndTipoPago(Long idPrestamo, Pago.TipoPago tipoPago);
 
-    @Query("SELECT SUM(p.montoPagado) FROM Pago p WHERE p.tipoPago = :tipoPago " +
-            "AND (p.estadoPago IS NULL OR p.estadoPago <> control.prendario.model.EstadoPago.CORREGIDO)")
+    @Query("SELECT COALESCE(SUM(p.montoPagado), 0) FROM Pago p WHERE p.tipoPago = :tipoPago " +
+            "AND (p.estadoPago IS NULL OR p.estadoPago <> control.prendario.model.EstadoPago.CORREGIDO) " +
+            "AND (p.esDescuento IS NULL OR p.esDescuento = false)")
     BigDecimal sumMontoPagadoByTipoPago(Pago.TipoPago tipoPago);
 
     @Query("SELECT DISTINCT p FROM Pago p " +
@@ -41,7 +42,8 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findAllPagosWithDetails();
 
     @Query("SELECT COALESCE(SUM(p.montoPagado), 0) FROM Pago p " +
-            "WHERE p.estadoPago IS NULL OR p.estadoPago <> control.prendario.model.EstadoPago.CORREGIDO")
+            "WHERE (p.estadoPago IS NULL OR p.estadoPago <> control.prendario.model.EstadoPago.CORREGIDO) " +
+            "AND (p.esDescuento IS NULL OR p.esDescuento = false)")
     BigDecimal sumTotalPagos();
 
     @Query("SELECT p FROM Pago p " +
