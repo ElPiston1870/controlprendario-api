@@ -57,9 +57,12 @@ public class Cliente {
     @Schema(description = "Fecha de registro en el sistema")
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
+
+    @Schema(description = "Indica si el cliente está activo o archivado", example = "true")
+    @Column(name = "activo")
+    private Boolean activo = true;
 }
 
  enum TipoDocumento {
     DNI, PASAPORTE, CEDULA
 }
-

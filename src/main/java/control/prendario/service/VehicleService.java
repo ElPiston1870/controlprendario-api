@@ -32,11 +32,13 @@ public class VehicleService {
             // Si existe, actualizamos sus datos
             Vehicle vehicle = existingVehicle.get();
             updateVehicleFromDTO(vehicle, vehicleDTO);
+            vehicle.setActivo(true);
             return vehicleRepository.save(vehicle);
         }
 
         // Si no existe, creamos uno nuevo
         Vehicle vehicle = vehicleMapper.toEntity(vehicleDTO);
+        vehicle.setActivo(true);
         return vehicleRepository.save(vehicle);
     }
 
@@ -58,7 +60,9 @@ public class VehicleService {
 
 
     public List<Vehicle> getAllVehicles() {
-        return vehicleRepository.findAll();
+        return vehicleRepository.findAll().stream()
+                .filter(vehicle -> !Boolean.FALSE.equals(vehicle.getActivo()))
+                .toList();
     }
 
     public Vehicle getVehicleById(Long id) {
@@ -67,7 +71,9 @@ public class VehicleService {
     }
 
     public void deleteVehicle(Long id) {
-        vehicleRepository.deleteById(id);
+        Vehicle vehicle = getVehicleById(id);
+        vehicle.setActivo(false);
+        vehicleRepository.save(vehicle);
     }
 
     public boolean existsByPlaca(String placa) {
@@ -92,6 +98,7 @@ public class VehicleService {
         }
 
         updateVehicleFromDTO(existingVehicle, vehicleDTO);
+        existingVehicle.setActivo(true);
         return vehicleRepository.save(existingVehicle);
     }
 

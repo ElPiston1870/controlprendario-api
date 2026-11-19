@@ -71,6 +71,16 @@ public class Vehicle {
     @Column(name = "fecha_registro")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaRegistro;
-}
 
+    @Schema(description = "Indica si el vehículo está activo o archivado", example = "true")
+    @Column(name = "activo")
+    private Boolean activo = true;
+
+    @PrePersist
+    protected void onCreate() {
+        if (activo == null) {
+            activo = true;
+        }
+    }
+}
 

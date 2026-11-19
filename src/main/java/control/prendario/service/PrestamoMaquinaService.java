@@ -22,7 +22,7 @@ public class PrestamoMaquinaService {
     @Transactional
     public PrestamoMaquina crearPrestamoMaquina(PrestamoMaquinaDTO prestamo) {
 
-        Cliente cliente = clienteService.obtenerPorId(prestamo.getIdCliente());
+        Cliente cliente = clienteService.obtenerActivoPorId(prestamo.getIdCliente());
 
         // Crear el préstamo
         PrestamoMaquina prestamoMaquina = new PrestamoMaquina();
@@ -42,7 +42,9 @@ public class PrestamoMaquinaService {
     }
 
     public List<PrestamoMaquina> obtenerTodosPrestamosMaquina() {
-        return prestamoMaquinaRepository.findAllByOrderByIdPrestamoMaquinaDesc();
+        return prestamoMaquinaRepository.findAllByOrderByIdPrestamoMaquinaDesc().stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public PrestamoMaquina obtenerPrestamoMaquinaPorId(Long id) {
@@ -85,22 +87,30 @@ public class PrestamoMaquinaService {
     }
 
     public void eliminarPrestamoMaquina(Long id) {
-        prestamoMaquinaRepository.deleteById(id);
+        PrestamoMaquina prestamo = obtenerPrestamoMaquinaPorId(id);
+        prestamo.setActivo(false);
+        prestamoMaquinaRepository.save(prestamo);
     }
 
     public List<PrestamoMaquina> buscarPorCliente(String termino) {
-        return prestamoMaquinaRepository.buscarPorCliente(termino);
+        return prestamoMaquinaRepository.buscarPorCliente(termino).stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public List<PrestamoMaquina> buscarPorTermino(String termino) {
-        return prestamoMaquinaRepository.findByBusquedaGeneral(termino);
+        return prestamoMaquinaRepository.findByBusquedaGeneral(termino).stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public List<PrestamoMaquina> buscarPorFiltros(String termino, String numeroDocumento) {
         if (termino != null && !termino.isEmpty()) {
-            return prestamoMaquinaRepository.findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(termino, termino);
+            return prestamoMaquinaRepository.findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(termino, termino)
+                    .stream().filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo())).toList();
         } else if (numeroDocumento != null && !numeroDocumento.isEmpty()) {
-            return prestamoMaquinaRepository.findByClienteNumeroDocumentoContaining(numeroDocumento);
+            return prestamoMaquinaRepository.findByClienteNumeroDocumentoContaining(numeroDocumento).stream()
+                    .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo())).toList();
         }
         return obtenerTodosPrestamosMaquina();
     }
@@ -116,8 +126,9 @@ public class PrestamoMaquinaService {
     }
 
     public List<PrestamoMaquina> findPrestamosVencidos() {
-        return
-                prestamoMaquinaRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO);
+        return prestamoMaquinaRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO).stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public Long getUltimoIdPrestamo() {

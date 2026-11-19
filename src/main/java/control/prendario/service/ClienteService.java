@@ -37,17 +37,28 @@ public class ClienteService {
             throw new RuntimeException("Ya existe un cliente con ese número de documento");
         }
         cliente.setFechaRegistro(LocalDateTime.now());
+        cliente.setActivo(true);
         return clienteRepository.save(cliente);
     }
 
     public List<Cliente> obtenerTodos() {
-        return clienteRepository.findAll();
+        return clienteRepository.findAll().stream()
+                .filter(cliente -> !Boolean.FALSE.equals(cliente.getActivo()))
+                .toList();
     }
 
 
     public Cliente obtenerPorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new ClienteNotFoundException("Cliente con ID " + id + " no encontrado"));
+    }
+
+    public Cliente obtenerActivoPorId(Long id) {
+        Cliente cliente = obtenerPorId(id);
+        if (Boolean.FALSE.equals(cliente.getActivo())) {
+            throw new ClienteNotFoundException("El cliente está archivado");
+        }
+        return cliente;
     }
 
     public HistorialClienteDTO consultarHistorial(Long id) {
@@ -98,28 +109,25 @@ public class ClienteService {
         return clienteRepository.save(clienteExistente);
     }
     public boolean eliminarCliente(Long id) {
-        // Primero verifica si el cliente existe
-        if (!clienteRepository.existsById(id)) {
-            throw new RuntimeException("Cliente no encontrado");
-        }
-
-        // Aquí podrías agregar lógica adicional antes de eliminar
-        // Por ejemplo, verificar si tiene préstamos activos
-
-        clienteRepository.deleteById(id);
+        Cliente cliente = obtenerPorId(id);
+        cliente.setActivo(false);
+        clienteRepository.save(cliente);
         return true;
     }
 
     public List<Cliente> buscarPorNombre(String termino) {
-        return clienteRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(termino, termino);
+        return clienteRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(termino, termino)
+                .stream().filter(cliente -> !Boolean.FALSE.equals(cliente.getActivo())).toList();
     }
 
     public List<Cliente> buscarPorNumeroDocumento(String numeroDocumento) {
-        return clienteRepository.findByNumeroDocumentoContaining(numeroDocumento);
+        return clienteRepository.findByNumeroDocumentoContaining(numeroDocumento)
+                .stream().filter(cliente -> !Boolean.FALSE.equals(cliente.getActivo())).toList();
     }
 
     public List<Cliente> buscarPorCiudad(String ciudad) {
-        return clienteRepository.findByCiudadIgnoreCase(ciudad);
+        return clienteRepository.findByCiudadIgnoreCase(ciudad).stream()
+                .filter(cliente -> !Boolean.FALSE.equals(cliente.getActivo())).toList();
 
     }
     public List<Cliente> buscar(String nombre, String numeroDocumento) {

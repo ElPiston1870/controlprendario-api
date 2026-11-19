@@ -29,7 +29,7 @@ public class PrestamoService {
     @Transactional
     public Prestamo savePrestamo(PrestamoDTO prestamoDTO) {
         // Obtener el cliente
-        Cliente cliente = clienteService.obtenerPorId(prestamoDTO.getIdCliente());
+        Cliente cliente = clienteService.obtenerActivoPorId(prestamoDTO.getIdCliente());
 
         // Buscar primero si existe un vehículo con esa placa
         Vehicle vehiculo = vehicleService.findByPlaca(prestamoDTO.getVehiculo().getPlaca())
@@ -60,7 +60,9 @@ public class PrestamoService {
 
 
     public List<Prestamo> getAllPrestamos() {
-        return prestamoRepository.findAllByOrderByIdPrestamoDesc();
+        return prestamoRepository.findAllByOrderByIdPrestamoDesc().stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public Prestamo getPrestamoById(Long id) {
@@ -109,25 +111,32 @@ public class PrestamoService {
     }
 
     public void deletePrestamo(Long id) {
-        prestamoRepository.deleteById(id);
+        Prestamo prestamo = getPrestamoById(id);
+        prestamo.setActivo(false);
+        prestamoRepository.save(prestamo);
     }
 
     public List<Prestamo> buscarPorTermino(String termino) {
-        return prestamoRepository.findByBusquedaGeneral(termino);
+        return prestamoRepository.findByBusquedaGeneral(termino).stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public List<Prestamo> buscarPorFiltros(String termino, String numeroDocumento) {
         if (termino != null && !termino.isEmpty()) {
-            return prestamoRepository.findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(termino, termino);
+            return prestamoRepository.findByClienteNombresContainingIgnoreCaseOrClienteApellidosContainingIgnoreCase(termino, termino)
+                    .stream().filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo())).toList();
         } else if (numeroDocumento != null && !numeroDocumento.isEmpty()) {
-            return prestamoRepository.findByClienteNumeroDocumentoContaining(numeroDocumento);
+            return prestamoRepository.findByClienteNumeroDocumentoContaining(numeroDocumento).stream()
+                    .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo())).toList();
         }
         return getAllPrestamos();
     }
 
     public List<Prestamo> findPrestamosVencidos() {
-        return
-                prestamoRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO);
+        return prestamoRepository.findByEstadoPrestamo(EstadoPrestamo.VENCIDO).stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
     }
 
     public Long getUltimoIdPrestamo() {

@@ -72,6 +72,10 @@ public class PrestamoMaquina {
     @Column(name = "capital_pendiente")
     private  BigDecimal capitalPendiente;
 
+    @Schema(description = "Indica si el préstamo está activo o archivado", example = "true")
+    @Column(name = "activo")
+    private Boolean activo = true;
+
     @PrePersist
     protected void onCreate() {
 
@@ -80,6 +84,9 @@ public class PrestamoMaquina {
 
         if (tasaInteres == null) {
             tasaInteres = new BigDecimal("5.0");
+        }
+        if (activo == null) {
+            activo = true;
         }
     }
 

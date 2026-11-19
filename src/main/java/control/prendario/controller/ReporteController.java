@@ -228,4 +228,36 @@ public class ReporteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @Operation(
+            summary = "Exportar resumen de préstamos en PDF",
+            description = "Genera un resumen de préstamos vehiculares y de maquinaria activos, con saldos pendientes y totales."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Resumen PDF generado exitosamente",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_PDF_VALUE,
+                            schema = @Schema(type = "string", format = "binary")
+                    )
+            ),
+            @ApiResponse(responseCode = "401", description = "Se requiere autenticación"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos para generar el reporte"),
+            @ApiResponse(responseCode = "500", description = "Error interno al generar el resumen")
+    })
+    @GetMapping("/resumen-prestamos")
+    public ResponseEntity<byte[]> generarResumenPrestamosPdf() {
+        try {
+            byte[] reporte = reporteService.generarResumenPrestamosPdf();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"resumen_prestamos.pdf\"")
+                    .body(reporte);
+        } catch (Exception e) {
+            logger.error("Error al generar resumen de préstamos PDF", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

@@ -5,6 +5,7 @@ import control.prendario.model.Pago;
 import control.prendario.model.PagoMaquina;
 import control.prendario.model.Prestamo;
 import control.prendario.model.PrestamoMaquina;
+import control.prendario.model.EstadoPrestamo;
 import control.prendario.repository.PagoMaquinaRepository;
 import control.prendario.repository.PagoRepository;
 import control.prendario.repository.PrestamoMaquinaRepository;
@@ -40,11 +41,12 @@ import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static control.prendario.DTO.NumberToLetterConverter.convertNumberToLetter;
 
@@ -167,6 +169,145 @@ public class ReporteService {
         exporter.exportReport();
 
         return baos.toByteArray();
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generarResumenPrestamosPdf() throws Exception {
+        List<Prestamo> prestamosVehiculares = prestamoRepository.findAll().stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
+        List<PrestamoMaquina> prestamosMaquinaria = prestamoMaquinaRepository.findAll().stream()
+                .filter(prestamo -> !Boolean.FALSE.equals(prestamo.getActivo()))
+                .toList();
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4.rotate(), 28, 28, 28, 28);
+        PdfWriter.getInstance(document, output);
+        document.open();
+
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, new BaseColor(31, 78, 121));
+        Font summaryFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.DARK_GRAY);
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.WHITE);
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8, BaseColor.BLACK);
+
+        Paragraph title = new Paragraph("RESUMEN DE PRÉSTAMOS", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+        Paragraph generatedAt = new Paragraph(
+                "Generado: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                summaryFont);
+        generatedAt.setAlignment(Element.ALIGN_RIGHT);
+        generatedAt.setSpacingAfter(12);
+        document.add(generatedAt);
+
+        int count = 0;
+        BigDecimal totalPrestado = BigDecimal.ZERO;
+        BigDecimal totalCapitalPendiente = BigDecimal.ZERO;
+        BigDecimal totalInteresPendiente = BigDecimal.ZERO;
+
+        PdfPTable table = new PdfPTable(new float[]{0.55f, 0.8f, 1.65f, 1.7f, 1.1f, 1.1f, 0.9f, 1.0f});
+        table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+        for (String heading : List.of("ID", "TIPO", "CLIENTE", "GARANTÍA", "PRÉSTAMO",
+                "CAPITAL PEND.", "INTERÉS PEND.", "ESTADO / VENCE")) {
+            PdfPCell cell = new PdfPCell(new Phrase(heading, headerFont));
+            cell.setBackgroundColor(new BaseColor(31, 78, 121));
+            cell.setPadding(5);
+            table.addCell(cell);
+        }
+
+        for (Prestamo prestamo : prestamosVehiculares) {
+            BigDecimal amount = ceroSiNulo(prestamo.getMontoPrestamo());
+            BigDecimal capitalPending = prestamo.getCapitalPendiente() != null
+                    ? prestamo.getCapitalPendiente()
+                    : amount.subtract(ceroSiNulo(prestamo.getCapitalPagado())).max(BigDecimal.ZERO);
+            BigDecimal interestPending = ceroSiNulo(prestamo.getInteresPendiente());
+            String guarantee = prestamo.getVehiculo() == null ? "Sin vehículo"
+                    : valor(prestamo.getVehiculo().getMarca()) + " "
+                    + valor(prestamo.getVehiculo().getLinea()) + " "
+                    + valor(prestamo.getVehiculo().getPlaca());
+            agregarFilaResumen(table, prestamo.getIdPrestamo(), "Vehicular",
+                    nombreCliente(prestamo.getCliente()), guarantee, amount, capitalPending,
+                    interestPending, prestamo.getEstadoPrestamo(), prestamo.getFechaVencimiento(), cellFont);
+            count++;
+            totalPrestado = totalPrestado.add(amount);
+            totalCapitalPendiente = totalCapitalPendiente.add(capitalPending);
+            totalInteresPendiente = totalInteresPendiente.add(interestPending);
+        }
+
+        for (PrestamoMaquina prestamo : prestamosMaquinaria) {
+            BigDecimal amount = ceroSiNulo(prestamo.getMontoPrestamo());
+            BigDecimal capitalPending = prestamo.getCapitalPendiente() != null
+                    ? prestamo.getCapitalPendiente()
+                    : amount.subtract(ceroSiNulo(prestamo.getCapitalPagado())).max(BigDecimal.ZERO);
+            BigDecimal interestPending = ceroSiNulo(prestamo.getInteresPendiente());
+            String guarantee = valor(prestamo.getTipoMaquina()) + " " + valor(prestamo.getMarcaMaquina());
+            agregarFilaResumen(table, prestamo.getIdPrestamoMaquina(), "Maquinaria",
+                    nombreCliente(prestamo.getCliente()), guarantee, amount, capitalPending,
+                    interestPending, prestamo.getEstadoPrestamo(), prestamo.getFechaVencimiento(), cellFont);
+            count++;
+            totalPrestado = totalPrestado.add(amount);
+            totalCapitalPendiente = totalCapitalPendiente.add(capitalPending);
+            totalInteresPendiente = totalInteresPendiente.add(interestPending);
+        }
+
+        if (count == 0) {
+            PdfPCell empty = new PdfPCell(new Phrase("No hay préstamos activos registrados.", cellFont));
+            empty.setColspan(8);
+            empty.setHorizontalAlignment(Element.ALIGN_CENTER);
+            empty.setPadding(10);
+            table.addCell(empty);
+        }
+        document.add(table);
+
+        Paragraph totals = new Paragraph(
+                String.format("Préstamos: %d    Total prestado: %s    Capital pendiente: %s    Interés pendiente: %s",
+                        count, formatearMonto(totalPrestado), formatearMonto(totalCapitalPendiente),
+                        formatearMonto(totalInteresPendiente)),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, new BaseColor(31, 78, 121)));
+        totals.setSpacingBefore(12);
+        document.add(totals);
+        document.close();
+        return output.toByteArray();
+    }
+
+    private void agregarFilaResumen(
+            PdfPTable table,
+            Long idPrestamo,
+            String tipo,
+            String cliente,
+            String garantia,
+            BigDecimal monto,
+            BigDecimal capitalPendiente,
+            BigDecimal interesPendiente,
+            EstadoPrestamo estado,
+            Object vencimiento,
+            Font font
+    ) {
+        List<String> values = List.of(
+                valor(idPrestamo),
+                tipo,
+                cliente,
+                garantia,
+                formatearMonto(monto),
+                formatearMonto(capitalPendiente),
+                formatearMonto(interesPendiente),
+                valor(estado) + " / " + valor(vencimiento)
+        );
+        for (String value : values) {
+            PdfPCell cell = new PdfPCell(new Phrase(value, font));
+            cell.setPadding(4);
+            table.addCell(cell);
+        }
+    }
+
+    private String nombreCliente(Cliente cliente) {
+        return cliente == null ? "No registrado"
+                : valor(cliente.getNombres()) + " " + valor(cliente.getApellidos());
+    }
+
+    private BigDecimal ceroSiNulo(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     @Transactional(readOnly = true)
