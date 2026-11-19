@@ -1,8 +1,10 @@
 package control.prendario.service;
 
+import control.prendario.DTO.CorreccionPagoDTO;
 import control.prendario.model.*;
 import control.prendario.repository.PagoMaquinaRepository;
 import control.prendario.repository.PrestamoMaquinaRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,11 @@ public class PagoMaquinaService {
     public PagoMaquina crearPago(PagoMaquina pago) {
         PrestamoMaquina prestamoMaquina = prestamoMaquinaRepository.findById(pago.getPrestamoMaquina().getIdPrestamoMaquina())
                 .orElseThrow(() -> new RuntimeException("Préstamo de máquina no encontrado"));
+        pago.setEstadoPago(EstadoPago.ACTIVO);
+        pago.setFechaCorreccion(null);
+        pago.setMotivoCorreccion(null);
+        pago.setCorregidoPorPagoId(null);
+        pago.setReemplazaPagoId(null);
 
         // Calculate total paid amounts
         BigDecimal capitalPagado = pagoMaquinaRepository.sumMontoPagadoByPrestamoAndTipoPago(
@@ -95,6 +102,49 @@ public class PagoMaquinaService {
         return descuentoGuardado;
     }
 
+    @Transactional
+    public PagoMaquina corregirPago(Long idPago, CorreccionPagoDTO correccion) {
+        PagoMaquina original = pagoMaquinaRepository.findByIdForUpdate(idPago)
+                .orElseThrow(() -> new EntityNotFoundException("Pago de maquinaria no encontrado"));
+        if (original.getEstadoPago() == EstadoPago.CORREGIDO) {
+            throw new IllegalArgumentException("El pago ya fue corregido");
+        }
+        validarCorreccion(correccion);
+
+        PagoMaquina reemplazo = new PagoMaquina();
+        reemplazo.setPrestamoMaquina(original.getPrestamoMaquina());
+        reemplazo.setFechaPago(original.getFechaPago());
+        reemplazo.setMontoPagado(correccion.getMontoPagado());
+        reemplazo.setTipoPago(correccion.getTipoPago());
+        reemplazo.setMetodoPago(correccion.getMetodoPago());
+        reemplazo.setObservaciones(correccion.getObservaciones());
+        reemplazo.setReemplazaPagoId(original.getIdPagoMaquina());
+        reemplazo.setMotivoCorreccion(correccion.getMotivo().trim());
+        reemplazo.setEstadoPago(EstadoPago.ACTIVO);
+        reemplazo = pagoMaquinaRepository.save(reemplazo);
+
+        original.setEstadoPago(EstadoPago.CORREGIDO);
+        original.setFechaCorreccion(java.time.LocalDateTime.now());
+        original.setMotivoCorreccion(correccion.getMotivo().trim());
+        original.setCorregidoPorPagoId(reemplazo.getIdPagoMaquina());
+        pagoMaquinaRepository.save(original);
+
+        obtenerResumenPagos(original.getPrestamoMaquina().getIdPrestamoMaquina());
+        return reemplazo;
+    }
+
+    private void validarCorreccion(CorreccionPagoDTO correccion) {
+        if (correccion == null
+                || correccion.getMontoPagado() == null
+                || correccion.getMontoPagado().compareTo(BigDecimal.ZERO) <= 0
+                || correccion.getTipoPago() == null
+                || correccion.getMetodoPago() == null
+                || correccion.getMotivo() == null
+                || correccion.getMotivo().isBlank()) {
+            throw new IllegalArgumentException("Debe indicar monto positivo, concepto, método de pago y motivo");
+        }
+    }
+
 
     public Map<String, BigDecimal> obtenerResumenPagos(Long idPrestamoMaquina) {
         PrestamoMaquina prestamoMaquina = prestamoMaquinaRepository.findById(idPrestamoMaquina)
@@ -125,16 +175,18 @@ public class PagoMaquinaService {
             interesPendiente = BigDecimal.ZERO;
         }
 
-        //Si el prestamo esta saldado el estado pasa a Pagado
-        if (!EstadoPrestamo.PAGADO.equals(prestamoMaquina.getEstadoPrestamo()) && capitalPendiente.compareTo(BigDecimal.ZERO) == 0) {
+        // Recalculate loan state after payment corrections as well as ordinary payments.
+        if (capitalPendiente.compareTo(BigDecimal.ZERO) <= 0) {
             prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.PAGADO);
             prestamoMaquinaRepository.save(prestamoMaquina);
-        }
-        //Si el prestamo supera tiene una deuda mayor pasa a estado vencido
-        if ( (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0) && (EstadoPrestamo.PENDIENTE.equals(prestamoMaquina.getEstadoPrestamo()) || EstadoPrestamo.ACTIVO.equals(prestamoMaquina.getEstadoPrestamo()) )) {
+        } else if (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) > 0
+                && (EstadoPrestamo.PENDIENTE.equals(prestamoMaquina.getEstadoPrestamo())
+                || EstadoPrestamo.ACTIVO.equals(prestamoMaquina.getEstadoPrestamo())
+                || EstadoPrestamo.PAGADO.equals(prestamoMaquina.getEstadoPrestamo()))) {
             prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.VENCIDO);
             prestamoMaquinaRepository.save(prestamoMaquina);
-        }else if (EstadoPrestamo.VENCIDO.equals(prestamoMaquina.getEstadoPrestamo()) && (interesPendiente.compareTo(capitalPendiente.multiply(BigDecimal.valueOf(0.15))) <= 0) ){
+        } else if (EstadoPrestamo.VENCIDO.equals(prestamoMaquina.getEstadoPrestamo())
+                || EstadoPrestamo.PAGADO.equals(prestamoMaquina.getEstadoPrestamo())) {
             prestamoMaquina.setEstadoPrestamo(EstadoPrestamo.PENDIENTE);
             prestamoMaquinaRepository.save(prestamoMaquina);
         }

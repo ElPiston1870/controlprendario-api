@@ -2,6 +2,7 @@ package control.prendario.service;
 
 import control.prendario.model.Pago;
 import control.prendario.model.PagoMaquina;
+import control.prendario.model.EstadoPago;
 import control.prendario.model.PrestamoMaquina;
 import control.prendario.repository.PagoMaquinaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,11 @@ public class CalculoInteresMaquinaService {
         //obtine los pagos y los filtra segun su tipo
         List<PagoMaquina> pagosOrdenados = pagoRepository.findByPrestamoMaquinaIdPrestamoMaquinaOrderByFechaPagoDesc(prestamo.getIdPrestamoMaquina());
         List<PagoMaquina> pagosCapital = pagosOrdenados.stream()
+                .filter(pago -> pago.getEstadoPago() != EstadoPago.CORREGIDO)
                 .filter(pago -> pago.getTipoPago() == Pago.TipoPago.CAPITAL)
                 .toList();
         List<PagoMaquina> pagosIntereses = pagosOrdenados.stream()
+                .filter(pago -> pago.getEstadoPago() != EstadoPago.CORREGIDO)
                 .filter(pago -> pago.getTipoPago() == Pago.TipoPago.INTERES)
                 .toList();
 

@@ -1,6 +1,7 @@
 package control.prendario.service;
 
 import control.prendario.model.Pago;
+import control.prendario.model.EstadoPago;
 import control.prendario.model.Prestamo;
 import control.prendario.repository.PagoMaquinaRepository;
 import control.prendario.repository.PagoRepository;
@@ -31,9 +32,11 @@ public class CalculoInteresService {
         //obtine los pagos y los filtra segun su tipo
         List<Pago> pagosOrdenados = pagoRepository.findByPrestamoIdPrestamoOrderByFechaPagoDesc(prestamo.getIdPrestamo());
         List<Pago> pagosCapital = pagosOrdenados.stream()
+                .filter(pago -> pago.getEstadoPago() != EstadoPago.CORREGIDO)
                 .filter(pago -> pago.getTipoPago() == Pago.TipoPago.CAPITAL)
                 .toList();
         List<Pago> pagosIntereses = pagosOrdenados.stream()
+                .filter(pago -> pago.getEstadoPago() != EstadoPago.CORREGIDO)
                 .filter(pago -> pago.getTipoPago() == Pago.TipoPago.INTERES)
                 .toList();
 

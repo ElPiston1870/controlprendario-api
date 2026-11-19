@@ -51,6 +51,27 @@ public class Pago {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
+    @Schema(description = "Estado del registro de pago", example = "ACTIVO")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pago")
+    private EstadoPago estadoPago = EstadoPago.ACTIVO;
+
+    @Schema(description = "Fecha y hora en que se corrigió este pago")
+    @Column(name = "fecha_correccion")
+    private LocalDateTime fechaCorreccion;
+
+    @Schema(description = "Motivo de corrección del pago original")
+    @Column(name = "motivo_correccion", length = 1000)
+    private String motivoCorreccion;
+
+    @Schema(description = "ID del nuevo pago que reemplaza este registro")
+    @Column(name = "corregido_por_pago_id")
+    private Long corregidoPorPagoId;
+
+    @Schema(description = "ID del pago original reemplazado por este registro")
+    @Column(name = "reemplaza_pago_id")
+    private Long reemplazaPagoId;
+
     public enum TipoPago {
         CAPITAL, INTERES, MORA
     }
@@ -61,6 +82,11 @@ public class Pago {
 
     @PrePersist
     protected void onCreate() {
-        fechaPago = LocalDateTime.now();
+        if (fechaPago == null) {
+            fechaPago = LocalDateTime.now();
+        }
+        if (estadoPago == null) {
+            estadoPago = EstadoPago.ACTIVO;
+        }
     }
 }

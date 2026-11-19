@@ -1,9 +1,12 @@
 package control.prendario.controller;
 
+import control.prendario.DTO.CorreccionPagoDTO;
 import control.prendario.model.Pago;
 import control.prendario.model.PagoMaquina;
 import control.prendario.service.PagoMaquinaService;
 import control.prendario.service.PagoService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -141,6 +144,36 @@ public class PagoController {
             @RequestParam BigDecimal montoDescuento
     ) {
         return ResponseEntity.ok(pagoService.aplicarDescuentoInteres(idPrestamo, montoDescuento));
+    }
+
+    @Operation(
+            summary = "Corregir un pago",
+            description = "Conserva el pago original como corregido, registra el motivo y crea un nuevo pago vinculado con los datos correctos."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pago corregido y reemplazo registrado",
+                    content = @Content(schema = @Schema(implementation = Pago.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o el pago ya fue corregido"),
+            @ApiResponse(responseCode = "404", description = "Pago no encontrado")
+    })
+    @PutMapping("/{idPago}/correccion")
+    public ResponseEntity<?> corregirPago(
+            @Parameter(description = "Identificador del pago a corregir", required = true, example = "1")
+            @PathVariable Long idPago,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Datos correctos del pago y motivo de la corrección",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CorreccionPagoDTO.class))
+            )
+            @Valid @RequestBody CorreccionPagoDTO correccion
+    ) {
+        try {
+            return ResponseEntity.ok(pagoService.corregirPago(idPago, correccion));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 
