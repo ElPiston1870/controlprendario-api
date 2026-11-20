@@ -42,28 +42,28 @@ class MovimientoServiceTest {
     }
 
     @Test
-    void calculaBalanceConPagosPrestamosInteresesYMontosActivosDeAmbosTipos() {
-        when(pagoRepository.sumMontoPagadoByTipoPago(Pago.TipoPago.INTERES)).thenReturn(new BigDecimal("3"));
-        when(pagoMaquinaRepository.sumMontoPagadoByTipoPago(Pago.TipoPago.INTERES)).thenReturn(new BigDecimal("4"));
-        when(movimientoRepository.calculateBalance()).thenReturn(new BigDecimal("100"));
-        when(pagoRepository.sumTotalPagos()).thenReturn(new BigDecimal("10"));
-        when(pagoMaquinaRepository.sumTotalPagos()).thenReturn(new BigDecimal("20"));
-        when(prestamoRepository.sumTotalPrestamos()).thenReturn(new BigDecimal("30"));
-        when(prestamoMaquinaRepository.sumTotalPrestamos()).thenReturn(new BigDecimal("20"));
+    void cp15CalculaDisponibilidadConEntradasSalidasPrestamosYPagosDeReferencia() {
+        when(pagoRepository.sumMontoPagadoByTipoPago(Pago.TipoPago.INTERES)).thenReturn(new BigDecimal("150000"));
+        when(pagoMaquinaRepository.sumMontoPagadoByTipoPago(Pago.TipoPago.INTERES)).thenReturn(BigDecimal.ZERO);
+        when(movimientoRepository.calculateBalance()).thenReturn(new BigDecimal("1900000"));
+        when(pagoRepository.sumTotalPagos()).thenReturn(new BigDecimal("150000"));
+        when(pagoMaquinaRepository.sumTotalPagos()).thenReturn(BigDecimal.ZERO);
+        when(prestamoRepository.sumTotalPrestamos()).thenReturn(new BigDecimal("1000000"));
+        when(prestamoMaquinaRepository.sumTotalPrestamos()).thenReturn(BigDecimal.ZERO);
         when(prestamoRepository.sumarMontosPorEstado(
                 EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO, EstadoPrestamo.PENDIENTE))
-                .thenReturn(new BigDecimal("15"));
+                .thenReturn(new BigDecimal("1000000"));
         when(prestamoMaquinaRepository.sumarMontosPorEstado(
                 EstadoPrestamo.ACTIVO, EstadoPrestamo.VENCIDO, EstadoPrestamo.PENDIENTE))
-                .thenReturn(new BigDecimal("10"));
+                .thenReturn(BigDecimal.ZERO);
 
         Map<String, BigDecimal> balance = service.obtenerBalanceCompleto();
 
-        assertEquals(new BigDecimal("100"), balance.get("movimientos"));
-        assertEquals(new BigDecimal("30"), balance.get("pagos"));
-        assertEquals(new BigDecimal("7"), balance.get("interes"));
-        assertEquals(new BigDecimal("50"), balance.get("prestamos"));
-        assertEquals(new BigDecimal("25"), balance.get("activos"));
-        assertEquals(new BigDecimal("80"), balance.get("total"));
+        assertEquals(new BigDecimal("1900000"), balance.get("movimientos"));
+        assertEquals(new BigDecimal("150000"), balance.get("pagos"));
+        assertEquals(new BigDecimal("150000"), balance.get("interes"));
+        assertEquals(new BigDecimal("1000000"), balance.get("prestamos"));
+        assertEquals(new BigDecimal("1000000"), balance.get("activos"));
+        assertEquals(new BigDecimal("1050000"), balance.get("total"));
     }
 }
