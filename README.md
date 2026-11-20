@@ -73,7 +73,7 @@ java -jar target/prendario-0.0.1-SNAPSHOT.jar
 | Registrar entradas y salidas (`/api/movimientos`) | ✔ | ✘ (403) |
 | Consultar auditoría (`/api/auditoria`) | ✔ | ✘ (403) |
 
-Los orígenes permitidos por CORS están en `config/WebConfig.java` (`http://localhost:4200` y `https://controlprendario.netlify.app`).
+Los orígenes permitidos por CORS están en `shared/WebConfig.java` (`http://localhost:4200` y `https://controlprendario.netlify.app`).
 
 ## Endpoints
 
@@ -137,15 +137,22 @@ UPDATE pagos_maquinas SET es_descuento = 0 WHERE es_descuento IS NULL;
 
 ## Estructura
 
+El código está organizado por funcionalidad (*vertical slicing*): cada carpeta reúne la entidad, el repositorio, el servicio, el controlador y los DTO de un mismo tema.
+
 ```
 src/main/java/control/prendario/
-├── config/       Seguridad (JWT, roles), CORS, Swagger y manejo de errores
-├── controller/   Endpoints REST
-├── service/      Reglas de negocio, cálculo de intereses, PDF y auditoría
-├── repository/   Acceso a datos (Spring Data JPA)
-├── model/        Entidades JPA
-├── DTO/          Objetos de transferencia
-└── scheduler/    Resumen diario de préstamos
+├── client/       Clientes e historial
+├── vehicle/      Vehículos en garantía
+├── loan/         Préstamos de vehículos y maquinaria, y resumen diario programado
+├── payment/      Pagos, descuentos, correcciones y cálculo de intereses
+├── movement/     Entradas, salidas y balance
+├── collateral/   Inventario de garantías
+├── report/       Contratos, recibos y resumen en PDF
+├── audit/        Registro de auditoría
+├── security/     Autenticación JWT y roles
+└── shared/       CORS, Swagger, manejo de errores y programación de tareas
 scripts/          Respaldo y restauración de la base de datos
 docs/             Diagramas UML, modelo relacional y uso de IA
 ```
+
+Los nombres de clases, métodos y variables están en inglés. Los nombres de tablas y columnas, las propiedades JSON, las rutas y parámetros HTTP y los valores de los enums se conservan en español, porque forman parte del contrato con la base de datos y con el frontend.

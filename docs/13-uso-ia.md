@@ -9,8 +9,8 @@ Este documento declara la herramienta de inteligencia artificial utilizada duran
 | Aspecto | Declaración |
 |---|---|
 | Herramientas | **Claude Code** (Anthropic), asistente de programación ejecutado en un entorno de nube aislado con acceso al repositorio `controlprendario-api`, y **GitHub Copilot** para la ampliación de las pruebas unitarias descrita en la sección 13.9. |
-| Herramientas de IA utilizadas | **Claude Code** para las actividades descritas en las secciones 13.2 a 13.8 y **GitHub Copilot** para apoyar la ampliación de las pruebas unitarias (sección 13.9). |
-| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. 3. **Revisión del código y corrección de pendientes del backend** (sección 13.8). 4. **Ampliación de las pruebas unitarias** (sección 13.9). |
+| Herramientas de IA utilizadas | **Claude Code** para las actividades descritas en las secciones 13.2 a 13.8 y 13.10, y **GitHub Copilot** para apoyar la ampliación de las pruebas unitarias (sección 13.9). |
+| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. 3. **Revisión del código y corrección de pendientes del backend** (sección 13.8). 4. **Ampliación de las pruebas unitarias** (sección 13.9). 5. **Reestructuración por vertical slicing y traducción de identificadores al inglés** (sección 13.10). |
 | Actividades **no** realizadas con IA | Análisis del problema, catálogo de requisitos, historias de usuario base (HU-01 a HU-10, sección 9 del informe), priorización MoSCoW, reglas de negocio, código fuente base de la aplicación (backend y frontend), funcionalidades RF-01 a RF-24 (incluidas seguridad JWT, auditoría, archivo lógico, inventario de garantías y resumen PDF), cálculo de intereses e informe de avance. Todo esto fue elaborado por el equipo. |
 | Responsable de la interacción | Yohan Bustos (Desarrollador). |
 | Rama de trabajo | `feature/yohan` |
@@ -151,3 +151,74 @@ GitHub Copilot se encargó de la gran mayoría de las pruebas unitarias añadida
 En la última ejecución documentada, `./mvnw clean verify` completó con **81 pruebas, sin fallos ni errores**, y JaCoCo reportó **82,01 % de cobertura de líneas**. La cobertura de ramas fue de 63,26 %. Estos resultados reflejan la ejecución automatizada de la suite y no sustituyen la revisión del equipo sobre los casos y las reglas de negocio.
 
 - [ ] El equipo revisó las pruebas añadidas y confirmó que sus casos representan el comportamiento esperado.
+
+## 13.10 Reestructuración por vertical slicing y nombres en inglés
+
+**Prompt 7: reestructuración del proyecto**
+
+> Listo, como entiendo que ya estan todos los test ahora si. Quiero pedirte la ultima tarea relacionada con el repositorio y una de las tareas mas importantes. Quiero que me hagas una reestructuracion al proyecto usando vertical slicing y importante que cambies todos estos nombres de clases metodos y cosas a INGLES. Ten mucho cuidado con esto, por favor no modifiques logica, simplemente es organizar y cambiar los nombres para tener buenas practicas. Para ello tambien haz los cambios tu directamente y documenta esos cambios en el doc 13-use-ia.md. Muchas gracias
+
+### Qué se hizo
+
+1. **Organización por funcionalidad (vertical slicing).** Los paquetes por capa técnica (`controller`, `service`, `repository`, `model`, `DTO`, `mapper`, `config`, `scheduler`) se reemplazaron por un paquete por funcionalidad de negocio. Cada uno reúne su entidad, repositorio, servicio, controlador y DTO. Las pruebas se movieron al mismo paquete que la clase que prueban.
+2. **Identificadores en inglés.** Se tradujeron los nombres de clases, interfaces, enums, atributos, métodos, parámetros, variables locales, constantes y nombres de métodos de prueba. También los nombres de consultas derivadas de Spring Data y los atributos usados dentro de las consultas JPQL.
+3. **Sin cambios de lógica.** No se modificaron condiciones, cálculos, flujos ni mensajes. Los textos visibles para el usuario (mensajes de error, descripciones de Swagger y contenido de los PDF) y los comentarios se conservaron en español, porque la interfaz del producto es en español.
+
+| Paquete (`control.prendario.*`) | Clases |
+|---|---|
+| `client` | `Client`, `ClientController`, `ClientService`, `ClientRepository`, `ClientHistoryDTO`, `DuplicateDocumentException` |
+| `vehicle` | `Vehicle`, `VehicleType`, `VehicleController`, `VehicleService`, `VehicleRepository`, `VehicleDTO`, `VehicleMapper` |
+| `loan` | `Loan`, `MachineryLoan`, `LoanStatus`, `LoanController`, `MachineryLoanController`, `PublicLoanController`, `LoanService`, `MachineryLoanService`, `LoanRepository`, `MachineryLoanRepository`, `LoanDTO`, `MachineryLoanDTO`, `LoanSummaryScheduler` |
+| `payment` | `Payment`, `MachineryPayment`, `PaymentStatus`, `PaymentController`, `MachineryPaymentController`, `PaymentService`, `MachineryPaymentService`, `InterestCalculationService`, `MachineryInterestCalculationService`, `PaymentRepository`, `MachineryPaymentRepository`, `PaymentCorrectionDTO` |
+| `movement` | `Movement`, `MovementController`, `MovementService`, `MovementRepository` |
+| `collateral` | `CollateralController`, `CollateralInventoryService`, `CollateralInventoryDTO` |
+| `report` | `ReportController`, `ReportService`, `NumberToLetterConverter`, `ClientReportDTO`, `LoanReportDTO`, `VehicleReportDTO` |
+| `audit` | `AuditEvent`, `AuditAspect`, `AuditEventController`, `AuditEventService`, `AuditEventRepository` |
+| `security` | `AuthController`, `SecurityConfig`, `JwtAuthenticationFilter`, `JwtService`, `LoginRequest`, `TokenResponse` |
+| `shared` | `WebConfig`, `SwaggerConfig`, `GlobalExceptionHandler`, `SchedulerConfig` |
+| raíz | `PrendarioApplication` (nombre del producto) |
+
+Equivalencias principales de clases: `Cliente` → `Client`, `Prestamo` → `Loan`, `PrestamoMaquina` → `MachineryLoan`, `Pago` → `Payment`, `PagoMaquina` → `MachineryPayment`, `Movimiento` → `Movement`, `EstadoPrestamo` → `LoanStatus`, `EstadoPago` → `PaymentStatus`, `Pago.TipoPago` → `Payment.PaymentType`, `Pago.MetodoPago` → `Payment.PaymentMethod`, `CalculoInteresService` → `InterestCalculationService`, `GarantiaInventarioService` → `CollateralInventoryService`, `ReporteService` → `ReportService`, `ResumenPrestamos` → `LoanSummaryScheduler`, `CorreccionPagoDTO` → `PaymentCorrectionDTO`, `HistorialClienteDTO` → `ClientHistoryDTO`.
+
+Equivalencias principales de atributos: `idCliente` → `clientId`, `numeroDocumento` → `documentNumber`, `nombres` → `firstNames`, `apellidos` → `lastNames`, `fechaRegistro` → `createdAt`, `activo` → `active`, `placa` → `plate`, `marca` → `brand`, `montoPrestamo` → `loanAmount`, `tasaInteres` → `interestRate`, `fechaVencimiento` → `dueDate`, `estadoPrestamo` → `loanStatus`, `capitalPendiente` → `pendingPrincipal`, `interesPendiente` → `pendingInterest`, `montoPagado` → `amountPaid`, `tipoPago` → `paymentType`, `esDescuento` → `discount`, `observaciones` → `notes`, `monto` → `amount`.
+
+### Qué se conservó a propósito
+
+Los nombres que forman parte de un contrato con la base de datos o con el frontend no se cambiaron, para no alterar el comportamiento:
+
+| Contrato | Cómo se conservó |
+|---|---|
+| Tablas y columnas | Cada atributo renombrado lleva `@Column(name = "...")` con la columna original. El DDL generado es idéntico byte a byte al anterior. |
+| Propiedades JSON | Cada atributo renombrado de entidades y DTO lleva `@JsonProperty("...")` con el nombre original (`idCliente`, `nombres`, `montoPrestamo`, etc.). |
+| Rutas y parámetros HTTP | Las rutas (`/api/clientes`, `/api/prestamos`...) no cambiaron. Los `@RequestParam` y `@PathVariable` renombrados declaran el nombre original (`termino`, `idPrestamo`...). |
+| Valores de enums | Se conservan (`ACTIVO`, `PAGADO`, `CAPITAL`, `INTERES`, `EFECTIVO`, `ENTRADA`, `CEDULA`...), porque se guardan en la base de datos y viajan en el JSON. |
+| Datos de los reportes | Las claves de los mapas que reciben las plantillas JasperReports se mantienen; las plantillas `.jrxml` y `.jasper` no se tocaron. |
+| Configuración | `application.properties`, nombres de variables de entorno y plantillas no cambiaron. |
+
+### Ajustes necesarios para mantener el mismo comportamiento
+
+| Archivo | Ajuste | Motivo |
+|---|---|---|
+| `audit/AuditAspect.java` | El *pointcut* pasa de `control.prendario.service..*` a `control.prendario..*Service.*`, y los prefijos de los métodos auditados pasan a inglés (`create`, `save`, `update`, `delete`, `correct`, `applyInterestDiscount`). | Los servicios cambiaron de paquete y de nombre. Se verificó que se auditan exactamente los mismos 19 métodos que antes. |
+| `shared/GlobalExceptionHandler.java` | El detalle de errores de validación (`campos`) se informa con el nombre JSON del campo. | Sin este ajuste, la respuesta 400 habría devuelto nombres en inglés (`documentNumber`) en vez de los que envía el frontend (`numeroDocumento`). |
+| `AuditAspectTest`, `ClientControllerTest` | Se tradujeron los nombres de métodos y campos escritos como texto en las pruebas. | Las pruebas simulan nombres de métodos e inyectan campos por reflexión. |
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| Pruebas automáticas (`./mvnw clean verify`) | 85 pruebas antes y después, sin fallos ni errores. JaCoCo: 81,95 % de líneas (mínimo exigido: 80 %) y 63,0 % de ramas. |
+| Esquema de base de datos | El DDL que Hibernate genera desde las entidades es idéntico byte a byte al anterior: 8 tablas, mismas columnas, tipos y restricciones. |
+| Contrato de la API (OpenAPI) | Las mismas 53 operaciones, con iguales rutas, métodos, parámetros, cuerpos y respuestas. Los 19 esquemas JSON conservan exactamente sus propiedades y valores de enum. |
+| Métodos auditados | Los mismos 19 métodos antes y después. |
+| Ejecución de punta a punta | La API se ejecutó contra MariaDB local. Se recorrieron login, roles, validación, cliente, préstamo, pago, descuento, balance, búsqueda, historial, inventario, contrato, recibo, resumen PDF y auditoría, con las mismas respuestas JSON. |
+
+### Diferencias observables que no son de comportamiento
+
+- Los registros nuevos de auditoría guardan la acción y el recurso con los nombres en inglés (por ejemplo `saveClient` / `ClientService` en lugar de `guardarCliente` / `ClienteService`). Los registros anteriores conservan sus valores.
+- En Swagger, los esquemas se muestran con los nombres de clase en inglés (por ejemplo `Client` en lugar de `Cliente`); sus propiedades no cambian.
+- El orden de algunas propiedades dentro de las respuestas JSON puede variar; el contenido es el mismo.
+- Los diagramas de `docs/diagramas` y `docs/10-modelo-relacional.sql` describen el modelo anterior a esta reestructuración. El DDL sigue siendo válido porque el esquema no cambió.
+
+- [ ] El equipo revisó la reestructuración y la nueva organización de paquetes.
+
