@@ -8,9 +8,9 @@ Este documento declara la herramienta de inteligencia artificial utilizada duran
 
 | Aspecto | Declaración |
 |---|---|
-| Herramienta | **Claude Code** (Anthropic), asistente de programación ejecutado en un entorno de nube aislado con acceso al repositorio `controlprendario-api`. |
-| Única herramienta de IA utilizada | Sí. No se utilizaron otras herramientas de IA (ChatGPT, Copilot, Gemini u otras). |
-| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. 3. **Revisión del código y corrección de pendientes del backend** (sección 13.8). |
+| Herramientas | **Claude Code** (Anthropic), asistente de programación ejecutado en un entorno de nube aislado con acceso al repositorio `controlprendario-api`, y **GitHub Copilot** para la ampliación de las pruebas unitarias descrita en la sección 13.9. |
+| Herramientas de IA utilizadas | **Claude Code** para las actividades descritas en las secciones 13.2 a 13.8 y **GitHub Copilot** para apoyar la ampliación de las pruebas unitarias (sección 13.9). |
+| Actividades apoyadas | 1. **Elaboración de diagramas** de la documentación técnica (ítems 7, 8, 9, 10 y 11 de la rúbrica). 2. **Redacción de historias de usuario detalladas, pila del producto y lista de tareas** (ítems 3, 4 y 5) a partir del informe de avance y del código. 3. **Revisión del código y corrección de pendientes del backend** (sección 13.8). 4. **Ampliación de las pruebas unitarias** (sección 13.9). |
 | Actividades **no** realizadas con IA | Análisis del problema, catálogo de requisitos, historias de usuario base (HU-01 a HU-10, sección 9 del informe), priorización MoSCoW, reglas de negocio, código fuente base de la aplicación (backend y frontend), funcionalidades RF-01 a RF-24 (incluidas seguridad JWT, auditoría, archivo lógico, inventario de garantías y resumen PDF), cálculo de intereses e informe de avance. Todo esto fue elaborado por el equipo. |
 | Responsable de la interacción | Yohan Bustos (Desarrollador). |
 | Rama de trabajo | `feature/yohan` |
@@ -80,7 +80,7 @@ Resultado: los dos documentos de la sección 13.2 (ítems 3, 4 y 5).
 | Fuentes editables | Los `.puml` son texto plano, revisable en un *diff* de Git y modificable por el equipo sin depender de la IA. |
 | Revisión humana | El equipo revisa cada diagrama contra el código antes de integrarlo a la rama principal, y valida criterios de aceptación, estados y responsables propuestos de las historias y tareas (ver lista 13.7). |
 | Aislamiento de la rama | El trabajo se hizo en `feature/yohan`; la IA no tiene permiso para integrar cambios en otras ramas ni para crear *pull requests* sin solicitud explícita. |
-| Cambios al software acotados y probados | Hasta la sección 13.8 la IA no modificó `src/`. Los cambios de código de la sección 13.8 se limitaron a corregir pendientes identificados en la revisión; cada uno se probó con pruebas automáticas y con una ejecución completa de la API contra una base de datos local. |
+| Cambios al software acotados y probados | Los cambios descritos en la sección 13.8 corrigieron pendientes identificados en la revisión. Posteriormente, GitHub Copilot amplió las pruebas unitarias, como se documenta en la sección 13.9. |
 | Protección de datos | No se usaron datos reales de clientes. Las credenciales de `application.properties` no se copiaron a la documentación. |
 | Entorno aislado | Claude Code se ejecutó en un contenedor en la nube con acceso solo al repositorio autorizado; los comandos quedaron sujetos al modo de permisos de la sesión. |
 
@@ -89,9 +89,9 @@ Resultado: los dos documentos de la sección 13.2 (ítems 3, 4 y 5).
 | Componente | Uso en este proyecto |
 |---|---|
 | **Reglas de negocio** | La IA **no definió ni modificó** reglas de negocio; en la sección 13.8 solo implementó en el código reglas ya definidas por el equipo (RN-01, RN-02, RN-14, RN-16). Las reglas RN-01 a RN-22 son del equipo (informe, sección 8). Los diagramas solo las reflejan donde ya están en el código: unicidad de documento (RN-01) y placa, tasa por defecto 5 % y plazo de 3 meses en `@PrePersist` (RN-07, RN-08), estados del préstamo (RN-22), trazabilidad de correcciones de pagos (RF-19 / RN-17) y movimientos independientes para el balance (RN-16). |
-| **Agentes** | Se usó un único agente (Claude Code en la sesión principal). No se delegaron tareas a subagentes ni se configuraron agentes personalizados. |
+| **Agentes** | Claude Code se utilizó en la sesión principal para las actividades hasta la sección 13.8; GitHub Copilot se utilizó en la sesión principal para la ampliación de pruebas de la sección 13.9. No se delegaron tareas a subagentes ni se configuraron agentes personalizados. |
 | **Skills** | No se invocaron *skills* de Claude Code ni se agregaron al repositorio. |
-| **Reglas para la IA (CLAUDE.md u otras)** | El repositorio no contiene archivos de instrucciones para la IA. Las restricciones se dieron en los prompts: limitar el uso de IA a los diagramas y trabajar en la rama `feature/yohan`. |
+| **Reglas para la IA (CLAUDE.md u otras)** | El repositorio no contiene archivos de instrucciones para la IA. Las restricciones iniciales se dieron en los prompts de Claude Code: limitar su trabajo a los diagramas y trabajar en la rama `feature/yohan`. La ampliación de pruebas con GitHub Copilot se documenta en la sección 13.9. |
 | **Herramientas externas** | PlantUML 1.2024.7 (descargado de Maven Central), Graphviz 2.43 y Maven/Hibernate del propio proyecto. |
 
 ## 13.7 Lista de verificación del equipo
@@ -144,3 +144,10 @@ Verificación: las 24 pruebas del proyecto pasan (`./mvnw test`). Además, la AP
 
 - [ ] El equipo revisó los cambios de código de esta sección antes de integrarlos a la rama principal.
 
+## 13.9 Ampliación de las pruebas unitarias
+
+GitHub Copilot se encargó de la gran mayoría de las pruebas unitarias añadidas para ampliar la cobertura del backend. La suite cubre de forma general servicios y reglas de negocio, cálculos de intereses, reportes PDF, auditoría, conversión de datos y controladores. También se configuró JaCoCo para medir la cobertura y exigir un mínimo global del 80 % de líneas durante la fase `verify`.
+
+En la última ejecución documentada, `./mvnw clean verify` completó con **81 pruebas, sin fallos ni errores**, y JaCoCo reportó **82,01 % de cobertura de líneas**. La cobertura de ramas fue de 63,26 %. Estos resultados reflejan la ejecución automatizada de la suite y no sustituyen la revisión del equipo sobre los casos y las reglas de negocio.
+
+- [ ] El equipo revisó las pruebas añadidas y confirmó que sus casos representan el comportamiento esperado.
