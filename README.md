@@ -137,20 +137,20 @@ UPDATE pagos_maquinas SET es_descuento = 0 WHERE es_descuento IS NULL;
 
 ## Estructura
 
-El código está organizado por funcionalidad (*vertical slicing*): cada carpeta reúne la entidad, el repositorio, el servicio, el controlador y los DTO de un mismo tema.
+El código está organizado por funcionalidad (*vertical slicing*). Dentro de cada módulo, las clases se agrupan por capa (`controller`, `domain`, `dto`, `repository`, `service`); los módulos con necesidades adicionales también tienen paquetes como `mapper`, `config`, `aspect`, `scheduler` o `util`.
 
 ```
 src/main/java/control/prendario/
-├── client/       Clientes e historial
-├── vehicle/      Vehículos en garantía
-├── loan/         Préstamos de vehículos y maquinaria, y resumen diario programado
-├── payment/      Pagos, descuentos, correcciones y cálculo de intereses
-├── movement/     Entradas, salidas y balance
-├── collateral/   Inventario de garantías
-├── report/       Contratos, recibos y resumen en PDF
-├── audit/        Registro de auditoría
-├── security/     Autenticación JWT y roles
-└── shared/       CORS, Swagger, manejo de errores y programación de tareas
+├── client/       controller, domain, dto, repository, service
+├── vehicle/      controller, domain, dto, mapper, repository, service
+├── loan/         controller, domain, dto, repository, service, scheduler
+├── payment/      controller, domain, dto, repository, service
+├── movement/     controller, domain, repository, service
+├── collateral/   controller, dto, service
+├── report/       controller, dto, service, util
+├── audit/        aspect, controller, domain, repository, service
+├── security/     config, controller, dto, service
+└── shared/       configuración transversal
 scripts/          Respaldo y restauración de la base de datos
 docs/             Diagramas UML, modelo relacional y uso de IA
 ```

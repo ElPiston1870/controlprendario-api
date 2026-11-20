@@ -98,7 +98,7 @@ Resultado: los dos documentos de la sección 13.2 (ítems 3, 4 y 5).
 
 Antes de integrar los diagramas a la rama principal, el equipo confirma:
 
-- [ ] Las entidades y atributos del diagrama de clases coinciden con `src/main/java/control/prendario/model`.
+- [ ] Las entidades y atributos del diagrama de clases coinciden con las clases de dominio en `src/main/java/control/prendario/*/domain`.
 - [ ] Las multiplicidades reflejan las reglas del negocio (un cliente con varios préstamos; cada pago con exactamente un préstamo).
 - [ ] El modelo relacional coincide con la base de datos desplegada en TiDB Cloud.
 - [ ] El diagrama de despliegue refleja el hospedaje real del frontend y del backend en la demostración.
@@ -221,4 +221,3 @@ Los nombres que forman parte de un contrato con la base de datos o con el fronte
 - Los diagramas de `docs/diagramas` y `docs/10-modelo-relacional.sql` describen el modelo anterior a esta reestructuración. El DDL sigue siendo válido porque el esquema no cambió.
 
 - [ ] El equipo revisó la reestructuración y la nueva organización de paquetes.
-

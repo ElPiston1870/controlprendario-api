@@ -1,19 +1,19 @@
 package control.prendario;
 
-import control.prendario.client.Client;
-import control.prendario.client.ClientRepository;
-import control.prendario.client.ClientService;
-import control.prendario.loan.Loan;
-import control.prendario.loan.LoanRepository;
-import control.prendario.loan.LoanService;
-import control.prendario.loan.MachineryLoan;
-import control.prendario.loan.MachineryLoanRepository;
-import control.prendario.loan.MachineryLoanService;
-import control.prendario.payment.MachineryPaymentRepository;
-import control.prendario.payment.PaymentRepository;
-import control.prendario.vehicle.Vehicle;
-import control.prendario.vehicle.VehicleRepository;
-import control.prendario.vehicle.VehicleService;
+import control.prendario.client.domain.Client;
+import control.prendario.client.repository.ClientRepository;
+import control.prendario.client.service.ClientService;
+import control.prendario.loan.domain.Loan;
+import control.prendario.loan.repository.LoanRepository;
+import control.prendario.loan.service.LoanService;
+import control.prendario.loan.domain.MachineryLoan;
+import control.prendario.loan.repository.MachineryLoanRepository;
+import control.prendario.loan.service.MachineryLoanService;
+import control.prendario.payment.repository.MachineryPaymentRepository;
+import control.prendario.payment.repository.PaymentRepository;
+import control.prendario.vehicle.domain.Vehicle;
+import control.prendario.vehicle.repository.VehicleRepository;
+import control.prendario.vehicle.service.VehicleService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
