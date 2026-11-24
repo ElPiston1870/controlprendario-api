@@ -29,7 +29,9 @@ El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el
 |---|---|
 | `DB_URL`, `DB_USERNAME` | Requeridas en `prod`. |
 | `LOCAL_DB_URL`, `LOCAL_DB_USERNAME` | Opcionales en `local`. Si se omiten, se usa MySQL en `localhost:3306` con el usuario `root`. |
-| `DB_PASSWORD`, `JWT_SECRET` | Configúralas en cada ambiente. La clave JWT debe tener al menos 32 bytes. |
+| `DB_PASSWORD` | Contraseña de MySQL o TiDB, según el ambiente. |
+| `JWT_SECRET` | Clave obligatoria en `prod`, de al menos 32 bytes. |
+| `LOCAL_JWT_SECRET` | Opcional en `local`. Sírvete de una clave local de al menos 32 bytes si quieres conservar las sesiones entre reinicios. |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD`, `OPERATOR_USERNAME` / `OPERATOR_PASSWORD` | Configura el usuario y la contraseña de cada rol que vaya a iniciar sesión. |
 | `JWT_EXPIRATION`, `SHOW_SQL`, `LOG_LEVEL_APP`, `LOG_LEVEL_SECURITY` | Opcionales. La vigencia predeterminada es de 8 horas y la salida de SQL está desactivada. |
 | `APP_CORS_ALLOWED_ORIGINS` | Opcional, con orígenes exactos separados por comas. En `local` se admiten `localhost:4200` y `127.0.0.1:4200`. En `prod` el proxy permite usar el mismo dominio y la lista queda vacía. |
@@ -37,7 +39,7 @@ El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el
 
 ### Ejecutar en local
 
-Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, ejecuta `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en PowerShell. La API queda en `http://localhost:8080` y Swagger en `/swagger-ui.html`.
+Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, ejecuta `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en PowerShell. La API queda en `http://localhost:8080` y Swagger en `/swagger-ui.html`. Spring genera una clave de sesión para el proceso local cuando `LOCAL_JWT_SECRET` está ausente. Si se reinicia la API, las sesiones firmadas con esa clave se invalidan.
 
 ### Ejecutar en Oracle
 

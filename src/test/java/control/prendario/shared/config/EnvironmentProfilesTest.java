@@ -63,6 +63,30 @@ class EnvironmentProfilesTest {
     }
 
     @Test
+    void localProfileCanSignTokensWithoutAConfiguredSecret() {
+        runner.withPropertyValues("JWT_SECRET=production-test-value")
+                .run(context -> assertThat(context.getEnvironment().getProperty("jwt.secret"))
+                        .hasSizeGreaterThanOrEqualTo(32)
+                        .isNotEqualTo("production-test-value"));
+    }
+
+    @Test
+    void localProfileUsesAnExplicitLocalSecretWhenProvided() {
+        runner.withPropertyValues("LOCAL_JWT_SECRET=explicit-test-key-for-local-sessions")
+                .run(context -> assertThat(context.getEnvironment().getProperty("jwt.secret"))
+                        .isEqualTo("explicit-test-key-for-local-sessions"));
+    }
+
+    @Test
+    void deployedProfileRequiresItsSigningSecret() {
+        runner.withPropertyValues("spring.profiles.active=prod",
+                                  "LOCAL_JWT_SECRET=explicit-test-key-for-local-sessions")
+                .run(context -> assertThatThrownBy(() -> context.getEnvironment().getProperty("jwt.secret"))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessageContaining("JWT_SECRET"));
+    }
+
+    @Test
     void deployedProfileHasNoLocalDatabaseFallback() {
         runner.withPropertyValues("spring.profiles.active=prod")
                 .run(context -> assertThatThrownBy(() -> context.getEnvironment().getProperty("spring.datasource.url"))
