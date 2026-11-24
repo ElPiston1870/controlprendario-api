@@ -1,5 +1,6 @@
 package control.prendario.vehicle.controller;
 
+import control.prendario.shared.query.PageResult;
 import control.prendario.vehicle.domain.Vehicle;
 import control.prendario.vehicle.dto.VehicleDTO;
 import control.prendario.vehicle.service.VehicleService;
@@ -29,12 +30,13 @@ class VehicleControllerTest {
         vehicle.setVehicleId(4L);
         VehicleDTO dto = new VehicleDTO();
         when(service.saveVehicle(dto)).thenReturn(vehicle);
-        when(service.getAllVehicles()).thenReturn(List.of(vehicle));
+        var page = new PageResult<>(List.of(vehicle), 0, 20, 1, 1);
+        when(service.pageVehicles(null)).thenReturn(page);
         when(service.getVehicleById(4L)).thenReturn(vehicle);
         when(service.updateVehicle(dto)).thenReturn(vehicle);
 
         assertSame(vehicle, controller.createVehicle(dto).getBody());
-        assertEquals(List.of(vehicle), controller.getAllVehicles().getBody());
+        assertEquals(page, controller.getAllVehicles(null).getBody());
         assertSame(vehicle, controller.getVehicleById(4L).getBody());
         assertSame(vehicle, controller.updateVehicle(4L, dto).getBody());
         assertEquals(4L, dto.getVehicleId());
@@ -45,13 +47,11 @@ class VehicleControllerTest {
     void returnsServiceErrorResponses() {
         VehicleDTO dto = new VehicleDTO();
         when(service.saveVehicle(dto)).thenThrow(new RuntimeException("duplicado"));
-        when(service.getAllVehicles()).thenThrow(new RuntimeException("error"));
         when(service.getVehicleById(9L)).thenThrow(new RuntimeException("no existe"));
         when(service.updateVehicle(dto)).thenThrow(new RuntimeException("invalido"));
         doThrow(new RuntimeException("no existe")).when(service).deleteVehicle(9L);
 
         assertEquals(HttpStatus.BAD_REQUEST, controller.createVehicle(dto).getStatusCode());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, controller.getAllVehicles().getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, controller.getVehicleById(9L).getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, controller.updateVehicle(9L, dto).getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, controller.deleteVehicle(9L).getStatusCode());

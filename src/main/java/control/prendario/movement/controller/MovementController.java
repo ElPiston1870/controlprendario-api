@@ -1,5 +1,10 @@
 package control.prendario.movement.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.movement.domain.Movement;
 import control.prendario.movement.service.MovementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -66,28 +70,10 @@ public class MovementController {
         return ResponseEntity.ok(movementService.createMovement(movement));
     }
 
-    @Operation(summary = "Obtener todos los movimientos",
-            description = "Obtiene una lista de todos los movimientos financieros registrados")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de movimientos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Movement.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "No tiene permisos para ver los movimientos"
-            )
-    })
+    @Operation(summary = "Consultar movimientos por página")
     @GetMapping
-    public ResponseEntity<List<Movement>> getMovements() {
-        return ResponseEntity.ok(movementService.getAllMovements());
+    public ResponseEntity<PageResult<Movement>> getMovements(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(movementService.pageMovements(query));
     }
 
     @Operation(summary = "Obtener balance completo",

@@ -1,5 +1,10 @@
 package control.prendario.loan.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.loan.domain.Loan;
 import control.prendario.loan.service.LoanService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,69 +14,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/public/prestamos")
-@Tag(name = "Préstamos Públicos",
-        description = "API pública para consulta de préstamos sin autenticación")
+@Tag(name = "Consulta de préstamos", description = "Rutas de consulta de préstamos")
+@SecurityRequirement(name = "JWT")
 public class PublicLoanController {
 
     @Autowired
     private LoanService loanService;
 
-    @Operation(summary = "Buscar préstamos públicamente",
-            description = "Permite buscar préstamos sin necesidad de autenticación. " +
-                    "Útil para que los clientes puedan consultar sus préstamos " +
-                    "usando su número de documento")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Búsqueda realizada exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Loan.class,
-                                    description = "Lista de préstamos que coinciden con los criterios de búsqueda"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Parámetros de búsqueda inválidos",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "object",
-                                    example = "{\"error\": \"Parámetros de búsqueda inválidos\"}"
-                            )
-                    )
-            )
-    })
+    @Operation(summary = "Buscar préstamos por página (requiere autenticación)")
     @GetMapping("/buscar")
-    public ResponseEntity<List<Loan>> searchLoans(
-            @Parameter(
-                    description = "Término general de búsqueda",
-                    example = "Juan"
-            )
-            @RequestParam(name = "termino", required = false) String term,
-
-            @Parameter(
-                    description = "Número de documento del cliente",
-                    example = "12345678"
-            )
-            @RequestParam(name = "numeroDocumento", required = false) String documentNumber) {
-        return ResponseEntity.ok(loanService.searchByFilters(term, documentNumber));
+    public ResponseEntity<PageResult<Loan>> searchLoans(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(loanService.pageLoans(query, false));
     }
 
-    @Operation(summary = "Obtener préstamo por ID públicamente",
-            description = "Permite consultar los detalles de un préstamo específico " +
-                    "sin necesidad de autenticación")
+    @Operation(summary = "Consultar el detalle de un préstamo por ID")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",

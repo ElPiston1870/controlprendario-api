@@ -1,9 +1,14 @@
 package control.prendario.payment.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+
 import control.prendario.payment.domain.Payment;
 import control.prendario.payment.domain.PaymentStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Lock;
@@ -14,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpecificationExecutor<Payment> {
     List<Payment> findByLoanLoanIdOrderByPaymentDateDesc(Long loanId);
     List<Payment> findByLoanClientClientIdOrderByPaymentDateDesc(Long clientId);
 
@@ -54,4 +59,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             @Param("loanId") Long loanId,
             @Param("paymentType") Payment.PaymentType paymentType
     );
+
+    @EntityGraph(attributePaths = {"loan", "loan.client"})
+    Page<Payment> findByLoanClientClientId(Long clientId, Pageable page);
 }

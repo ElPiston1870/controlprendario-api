@@ -1,5 +1,10 @@
 package control.prendario.loan.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.loan.domain.MachineryLoan;
 import control.prendario.loan.dto.MachineryLoanDTO;
 import control.prendario.loan.service.MachineryLoanService;
@@ -13,16 +18,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-@Slf4j
 @RestController
 @RequestMapping("/api/prestamos-maquinas")
 @Tag(name = "Préstamos de Máquinas",
@@ -63,21 +62,11 @@ public class MachineryLoanController {
         }
     }
 
-    @Operation(summary = "Obtener todos los préstamos de máquinas",
-            description = "Obtiene una lista de todos los préstamos de máquinas registrados")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de préstamos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = MachineryLoan.class)
-                    )
-            )
-    })
-    @GetMapping
-    public ResponseEntity<List<MachineryLoan>> getAllMachineryLoans() {
-        return ResponseEntity.ok(machineryLoanService.getAllMachineryLoans());
+    @Operation(summary = "Listar préstamos de maquinaria por página")
+    @GetMapping({"", "/buscar"})
+    public ResponseEntity<PageResult<MachineryLoan>> getAllMachineryLoans(
+            @ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(machineryLoanService.pageLoans(query, false));
     }
 
     @Operation(summary = "Obtener préstamo de máquina por ID",
@@ -129,20 +118,9 @@ public class MachineryLoanController {
         }
     }
 
-    @Operation(summary = "Buscar préstamos por cliente",
-            description = "Busca préstamos de máquinas por nombre o apellido del cliente")
-    @GetMapping("/buscar")
-    public ResponseEntity<List<MachineryLoan>> searchLoansByClient(
-            @Parameter(description = "Término de búsqueda")
-            @RequestParam("termino") String term) {
-        return ResponseEntity.ok(machineryLoanService.searchByClient(term));
-    }
-
-    @Operation(summary = "Obtener préstamos vencidos",
-            description = "Obtiene una lista de todos los préstamos de máquinas vencidos")
     @GetMapping("/vencidos")
-    public ResponseEntity<List<MachineryLoan>> getOverdueLoans() {
-        return ResponseEntity.ok(machineryLoanService.getOverdueLoans());
+    public ResponseEntity<PageResult<MachineryLoan>> getOverdueLoans(
+            @ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(machineryLoanService.pageLoans(query, true));
     }
-
 }

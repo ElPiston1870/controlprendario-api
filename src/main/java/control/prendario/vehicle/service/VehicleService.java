@@ -1,5 +1,9 @@
 package control.prendario.vehicle.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.vehicle.domain.Vehicle;
 import control.prendario.vehicle.domain.VehicleType;
 import control.prendario.vehicle.dto.VehicleDTO;
@@ -150,4 +154,9 @@ public class VehicleService {
         return vehicleRepository.findByPlate(plate);
     }
 
+
+    public PageResult<Vehicle> pageVehicles(BrowseQuery q) {
+        return PageResult.from(vehicleRepository.findAll(CatalogFilters.vehicles(q),
+                q.page(Sort.by(Sort.Direction.DESC, "vehicleId"))));
+    }
 }

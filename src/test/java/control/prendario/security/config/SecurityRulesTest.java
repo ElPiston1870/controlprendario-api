@@ -27,6 +27,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.argThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -100,11 +104,16 @@ class SecurityRulesTest {
     @Test
     void employeeManagesClients() throws Exception {
         String token = token("test-empleado", "test-empleado-password");
-        when(clientService.getAllClients()).thenReturn(List.of());
+        when(clientService.pageClients(any(BrowseQuery.class))).thenReturn(new PageResult<>(List.of(), 1, 5, 0, 0));
         when(clientService.saveClient(any(Client.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        mockMvc.perform(get("/api/clientes").header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/clientes/buscar").header("Authorization", "Bearer " + token)
+                        .param("pagina", "1").param("tamano", "5")
+                        .param("nombre", "Ana Pérez").param("numeroDocumento", "123"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.content").isArray());
+        verify(clientService).pageClients(argThat(query -> query.pagina() == 1 && query.tamano() == 5
+                && "Ana Pérez".equals(query.nombre()) && "123".equals(query.numeroDocumento())));
         mockMvc.perform(post("/api/clientes").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(VALID_CLIENT))
                 .andExpect(status().isOk());

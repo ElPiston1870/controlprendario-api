@@ -1,5 +1,9 @@
 package control.prendario.loan.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.loan.domain.LoanStatus;
 import control.prendario.loan.domain.MachineryLoan;
 import control.prendario.loan.dto.MachineryLoanDTO;
@@ -135,5 +139,11 @@ public class MachineryLoanService {
 
     public Long getLastLoanId() {
         return machineryLoanRepository.findMaxId();
+    }
+
+    public PageResult<MachineryLoan> pageLoans(BrowseQuery q, boolean overdue) {
+        return PageResult.from(machineryLoanRepository.findAll(CatalogFilters.machineryLoans(q, overdue),
+                q.page(overdue ? Sort.by(Sort.Direction.DESC, "dueDate", "machineryLoanId")
+                        : Sort.by(Sort.Direction.DESC, "machineryLoanId"))));
     }
 }

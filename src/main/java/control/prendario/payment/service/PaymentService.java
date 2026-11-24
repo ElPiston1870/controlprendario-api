@@ -1,5 +1,9 @@
 package control.prendario.payment.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.payment.domain.Payment;
 import control.prendario.payment.domain.PaymentStatus;
 import control.prendario.payment.dto.PaymentCorrectionDTO;
@@ -237,5 +241,10 @@ public class PaymentService {
 
     public List<Payment> getAllPayments() {
         return paymentRepository.findAllPaymentsWithDetails();
+    }
+
+    public PageResult<Payment> pagePayments(BrowseQuery q) {
+        return PageResult.from(paymentRepository.findAll(CatalogFilters.payments(q),
+                q.page(Sort.by(Sort.Direction.DESC, "paymentDate", "paymentId"))));
     }
 }

@@ -1,5 +1,9 @@
 package control.prendario.audit.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.audit.domain.AuditEvent;
 import control.prendario.audit.repository.AuditEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +36,10 @@ public class AuditEventService {
         int safeSize = Math.max(1, Math.min(size, 100));
         return auditEventRepository.findAllByOrderByEventDateDesc(
                 PageRequest.of(safePage, safeSize));
+    }
+
+    public PageResult<AuditEvent> pageEvents(BrowseQuery q) {
+        return PageResult.from(auditEventRepository.findAll(CatalogFilters.events(q),
+                q.page(Sort.by(Sort.Direction.DESC, "eventDate", "id"))));
     }
 }

@@ -1,6 +1,12 @@
 package control.prendario.client.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.client.domain.Client;
+import control.prendario.client.dto.ClientHistoryPage;
+import control.prendario.client.dto.ClientHistoryQuery;
 import control.prendario.client.domain.DuplicateDocumentException;
 import control.prendario.client.dto.ClientHistoryDTO;
 import control.prendario.client.repository.ClientRepository;
@@ -11,6 +17,7 @@ import control.prendario.payment.repository.PaymentRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,6 +84,25 @@ public class ClientService {
                 .build();
     }
 
+
+    @Transactional(readOnly = true)
+    public ClientHistoryPage getHistory(Long id, ClientHistoryQuery q) {
+        Client client = getById(id);
+        return new ClientHistoryPage(client,
+                PageResult.from(loanRepository.findByClientClientId(id, BrowseQuery.page(
+                        q.orDefault(q.paginaPrestamosVehiculares()), q.tamano(),
+                        Sort.by(Sort.Direction.DESC, "loanDate", "loanId")))),
+                PageResult.from(machineryLoanRepository.findByClientClientId(id, BrowseQuery.page(
+                        q.orDefault(q.paginaPrestamosMaquinaria()), q.tamano(),
+                        Sort.by(Sort.Direction.DESC, "loanDate", "machineryLoanId")))),
+                PageResult.from(paymentRepository.findByLoanClientClientId(id, BrowseQuery.page(
+                        q.orDefault(q.paginaPagosVehiculares()), q.tamano(),
+                        Sort.by(Sort.Direction.DESC, "paymentDate", "paymentId")))),
+                PageResult.from(machineryPaymentRepository.findByMachineryLoanClientClientId(id, BrowseQuery.page(
+                        q.orDefault(q.paginaPagosMaquinaria()), q.tamano(),
+                        Sort.by(Sort.Direction.DESC, "paymentDate", "machineryPaymentId")))));
+    }
+
     public class ClientNotFoundException extends RuntimeException {
         public ClientNotFoundException(String message) {
             super(message);
@@ -137,5 +163,10 @@ public class ClientService {
             return searchByDocumentNumber(documentNumber);
         }
         return getAllClients();
+    }
+
+    public PageResult<Client> pageClients(BrowseQuery q) {
+        return PageResult.from(clientRepository.findAll(CatalogFilters.clients(q),
+                q.page(Sort.by(Sort.Direction.DESC, "clientId"))));
     }
 }

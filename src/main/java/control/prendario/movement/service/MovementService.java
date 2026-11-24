@@ -1,5 +1,9 @@
 package control.prendario.movement.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.movement.domain.Movement;
 import control.prendario.movement.repository.MovementRepository;
 import control.prendario.loan.repository.LoanRepository;
@@ -75,5 +79,10 @@ public class MovementService {
         balance.put("total", totalBalance);
 
         return balance;
+    }
+
+    public PageResult<Movement> pageMovements(BrowseQuery q) {
+        return PageResult.from(movementRepository.findAll(CatalogFilters.movements(q),
+                q.page(Sort.by(Sort.Direction.DESC, "movementDate", "movementId"))));
     }
 }

@@ -1,5 +1,10 @@
 package control.prendario.payment.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.payment.domain.MachineryPayment;
 import control.prendario.payment.dto.PaymentCorrectionDTO;
 import control.prendario.payment.service.MachineryPaymentService;
@@ -18,8 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pagos-maquinas")
@@ -30,6 +33,12 @@ public class MachineryPaymentController {
 
     @Autowired
     private MachineryPaymentService machineryPaymentService;
+
+    @Operation(summary = "Consultar pagos de maquinaria por página")
+    @GetMapping
+    public ResponseEntity<PageResult<MachineryPayment>> listPayments(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(machineryPaymentService.pagePayments(query));
+    }
 
     @Operation(summary = "Crear nuevo pago",
             description = "Registra un nuevo pago para un préstamo de máquina")

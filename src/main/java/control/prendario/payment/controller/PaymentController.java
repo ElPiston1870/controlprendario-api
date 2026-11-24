@@ -1,5 +1,10 @@
 package control.prendario.payment.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.payment.domain.MachineryPayment;
 import control.prendario.payment.domain.Payment;
 import control.prendario.payment.dto.PaymentCorrectionDTO;
@@ -20,8 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pagos")
@@ -35,52 +38,17 @@ public class PaymentController {
     @Autowired
     private MachineryPaymentService machineryPaymentService;
 
-    @Operation(summary = "Obtener todos los pagos",
-            description = "Obtiene una lista de todos los pagos registrados en el sistema")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de pagos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Payment.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "No tiene permisos para ver los pagos"
-            )
-    })
+    @Operation(summary = "Consultar pagos vehiculares por página")
     @GetMapping
-    public ResponseEntity<List<Payment>> getAllPayments() {
-        return ResponseEntity.ok(paymentService.getAllPayments());
+    public ResponseEntity<PageResult<Payment>> getAllPayments(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(paymentService.pagePayments(query));
     }
 
-    @Operation(summary = "Obtener todos los pagos",
-            description = "Obtiene una lista de todos los pagos registrados en el sistema")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de pagos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(
-                                    type = "array",
-                                    implementation = Payment.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "No tiene permisos para ver los pagos"
-            )
-    })
+    @Operation(summary = "Consultar pagos de maquinaria por página")
     @GetMapping("/maquina")
-    public ResponseEntity<List<MachineryPayment>> getAllMachineryPayments() {
-        return ResponseEntity.ok(machineryPaymentService.getAllPayments());
+    public ResponseEntity<PageResult<MachineryPayment>> getAllMachineryPayments(
+            @ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(machineryPaymentService.pagePayments(query));
     }
 
     @Operation(summary = "Crear nuevo pago",

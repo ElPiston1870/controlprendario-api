@@ -1,5 +1,10 @@
 package control.prendario.vehicle.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import control.prendario.vehicle.domain.Vehicle;
 import control.prendario.vehicle.dto.VehicleDTO;
 import control.prendario.vehicle.service.VehicleService;
@@ -16,8 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -70,32 +73,10 @@ public class VehicleController {
         }
     }
 
-    @Operation(summary = "Obtener todos los vehículos",
-            description = "Obtiene una lista de todos los vehículos registrados en el sistema")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de vehículos obtenida exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = Vehicle.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno del servidor"
-            )
-    })
+    @Operation(summary = "Consultar vehículos por página")
     @GetMapping
-    public ResponseEntity<List<Vehicle>> getAllVehicles() {
-        try {
-            logger.info("Obteniendo lista de todos los vehículos");
-            List<Vehicle> vehicles = vehicleService.getAllVehicles();
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            logger.error("Error al obtener vehículos: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity<PageResult<Vehicle>> getAllVehicles(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(vehicleService.pageVehicles(query));
     }
 
     @Operation(summary = "Obtener vehículo por ID",

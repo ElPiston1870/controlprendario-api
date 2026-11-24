@@ -1,7 +1,13 @@
 package control.prendario.client.controller;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.PageResult;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import control.prendario.client.dto.ClientHistoryPage;
+import control.prendario.client.dto.ClientHistoryQuery;
+
 import control.prendario.client.domain.Client;
-import control.prendario.client.dto.ClientHistoryDTO;
 import control.prendario.client.service.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,11 +21,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -48,59 +49,10 @@ public class ClientController {
         return ResponseEntity.ok(clientService.saveClient(client));
     }
 
-    @Operation(summary = "Listar todos los clientes",
-            description = "Obtiene una lista de todos los clientes registrados en el sistema")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Lista de clientes obtenida exitosamente",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = Client.class)))
-    })
-    @GetMapping
-    public ResponseEntity<List<Client>> listClients() {
-        return ResponseEntity.ok(clientService.getAllClients());
-    }
-
-    @Operation(summary = "Buscar clientes",
-            description = "Busca clientes por término general, nombre o número de documento")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Búsqueda realizada exitosamente",
-                    content = @Content(schema = @Schema(type = "array",
-                            implementation = Client.class))),
-            @ApiResponse(responseCode = "400",
-                    description = "Error en los parámetros de búsqueda")
-    })
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Client>> searchClients(
-            @Parameter(description = "Término general de búsqueda")
-            @RequestParam(name = "termino", required = false) String term,
-
-            @Parameter(description = "Nombre del cliente")
-            @RequestParam(name = "nombre", required = false) String nameFilter,
-
-            @Parameter(description = "Número de documento del cliente")
-            @RequestParam(name = "numeroDocumento", required = false) String documentNumber) {
-        try {
-            List<Client> results = new ArrayList<>();
-
-            if (term != null && !term.trim().isEmpty()) {
-                Set<Client> uniqueClients = new LinkedHashSet<>();
-                uniqueClients.addAll(clientService.searchByName(term));
-                uniqueClients.addAll(clientService.searchByDocumentNumber(term));
-                results = new ArrayList<>(uniqueClients);
-            } else if (nameFilter != null || documentNumber != null) {
-                results = clientService.search(
-                        nameFilter != null ? nameFilter : "",
-                        documentNumber != null ? documentNumber : ""
-                );
-            }
-
-            return ResponseEntity.ok(results);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
+    @Operation(summary = "Listar y buscar clientes por página")
+    @GetMapping({"", "/buscar"})
+    public ResponseEntity<PageResult<Client>> listClients(@ParameterObject @ModelAttribute BrowseQuery query) {
+        return ResponseEntity.ok(clientService.pageClients(query));
     }
 
     @Operation(summary = "Obtener cliente por ID",
@@ -119,40 +71,11 @@ public class ClientController {
         return ResponseEntity.ok(clientService.getById(id));
     }
 
-    @Operation(
-            summary = "Consultar historial del cliente",
-            description = "Obtiene la información del cliente y su historial consolidado de préstamos vehiculares y de maquinaria."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Historial obtenido exitosamente",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ClientHistoryDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Cliente no encontrado",
-                    content = @Content(mediaType = "application/json")
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Error interno al consultar el historial"
-            )
-    })
+    @Operation(summary = "Consultar historial paginado del cliente")
     @GetMapping("/{id}/historial")
-    public ResponseEntity<ClientHistoryDTO> getHistory(
-            @Parameter(
-                    name = "id",
-                    description = "Identificador único del cliente",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long id
-    ) {
-        return ResponseEntity.ok(clientService.getHistory(id));
+    public ResponseEntity<ClientHistoryPage> getHistory(@PathVariable Long id,
+                                                        @ParameterObject @ModelAttribute ClientHistoryQuery query) {
+        return ResponseEntity.ok(clientService.getHistory(id, query));
     }
 
     @Operation(summary = "Actualizar cliente",

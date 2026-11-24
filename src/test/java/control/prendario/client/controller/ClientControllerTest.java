@@ -1,7 +1,9 @@
 package control.prendario.client.controller;
 
 import control.prendario.client.domain.Client;
-import control.prendario.client.dto.ClientHistoryDTO;
+import control.prendario.client.dto.ClientHistoryPage;
+import control.prendario.client.dto.ClientHistoryQuery;
+import control.prendario.shared.query.PageResult;
 import control.prendario.client.service.ClientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,45 +30,29 @@ class ClientControllerTest {
     @Test
     void delegatesCrudOperationsAndHistory() {
         Client client = new Client();
-        List<Client> clients = List.of(client);
-        ClientHistoryDTO history = ClientHistoryDTO.builder().client(client).build();
+        var clients = new PageResult<>(List.of(client), 0, 20, 1, 1);
+        var history = new ClientHistoryPage(client, null, null, null, null);
+        var query = new ClientHistoryQuery(null, null, null, null, null, null);
         when(service.saveClient(client)).thenReturn(client);
-        when(service.getAllClients()).thenReturn(clients);
+        when(service.pageClients(any())).thenReturn(clients);
         when(service.getById(1L)).thenReturn(client);
-        when(service.getHistory(1L)).thenReturn(history);
+        when(service.getHistory(1L, query)).thenReturn(history);
         when(service.updateClient(1L, client)).thenReturn(client);
         when(service.deleteClient(1L)).thenReturn(true);
 
         assertSame(client, controller.createClient(client).getBody());
-        assertEquals(clients, controller.listClients().getBody());
+        assertEquals(clients, controller.listClients(null).getBody());
         assertSame(client, controller.getClient(1L).getBody());
-        assertSame(history, controller.getHistory(1L).getBody());
+        assertSame(history, controller.getHistory(1L, query).getBody());
         assertSame(client, controller.updateClient(1L, client).getBody());
         assertEquals(HttpStatus.OK, controller.deleteClient(1L).getStatusCode());
         verify(service).deleteClient(1L);
     }
 
     @Test
-    void searchCombinesResultsWithoutDuplicatesAndSupportsFilters() {
-        Client client = new Client();
-        Client byDocument = new Client();
-        byDocument.setDocumentNumber("123");
-        when(service.searchByName("Ana")).thenReturn(List.of(client));
-        when(service.searchByDocumentNumber("Ana")).thenReturn(List.of(client, byDocument));
-        when(service.search("Ana", "")).thenReturn(List.of(client));
-
-        assertEquals(List.of(client, byDocument), controller.searchClients("Ana", null, null).getBody());
-        assertEquals(List.of(client), controller.searchClients(" ", "Ana", null).getBody());
-        assertTrue(controller.searchClients(null, null, null).getBody().isEmpty());
-        verify(service).search("Ana", "");
-    }
-
-    @Test
-    void returnsEmptyListWhenSearchFailsAndNotFoundWhenDeleteFails() {
-        when(service.searchByName("Ana")).thenThrow(new RuntimeException("error"));
+    void returnsNotFoundWhenDeleteFails() {
         when(service.deleteClient(2L)).thenReturn(false);
 
-        assertEquals(HttpStatus.BAD_REQUEST, controller.searchClients("Ana", null, null).getStatusCode());
         assertEquals(HttpStatus.NOT_FOUND, controller.deleteClient(2L).getStatusCode());
     }
 }

@@ -1,10 +1,15 @@
 package control.prendario.payment.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+
 import control.prendario.payment.domain.MachineryPayment;
 import control.prendario.payment.domain.Payment;
 import control.prendario.payment.domain.PaymentStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MachineryPaymentRepository extends JpaRepository<MachineryPayment, Long> {
+public interface MachineryPaymentRepository extends JpaRepository<MachineryPayment, Long>, JpaSpecificationExecutor<MachineryPayment> {
     List<MachineryPayment> findByMachineryLoanMachineryLoanIdOrderByPaymentDateDesc(Long machineryLoanId);
     List<MachineryPayment> findByMachineryLoanClientClientIdOrderByPaymentDateDesc(Long clientId);
 
@@ -45,4 +50,7 @@ public interface MachineryPaymentRepository extends JpaRepository<MachineryPayme
             "AND (p.discount IS NULL OR p.discount = false)")
     BigDecimal sumTotalPayments();
 
+
+    @EntityGraph(attributePaths = {"machineryLoan", "machineryLoan.client"})
+    Page<MachineryPayment> findByMachineryLoanClientClientId(Long clientId, Pageable page);
 }

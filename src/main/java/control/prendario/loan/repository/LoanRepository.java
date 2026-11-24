@@ -1,15 +1,20 @@
 package control.prendario.loan.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+
 import control.prendario.loan.domain.Loan;
 import control.prendario.loan.domain.LoanStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface LoanRepository extends JpaRepository<Loan, Long> {
+public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
 
     @Query("SELECT p FROM Loan p JOIN p.client c " +
             "WHERE LOWER(c.firstNames) LIKE LOWER(CONCAT('%', :term, '%')) " +
@@ -32,4 +37,9 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findByClientFirstNamesContainingIgnoreCaseOrClientLastNamesContainingIgnoreCase(String firstNames, String lastNames);
     List<Loan> findByClientDocumentNumberContaining(String documentNumber);
     List<Loan> findByClientClientIdOrderByLoanDateDesc(Long clientId);
+
+    @EntityGraph(attributePaths = {"client", "vehicle"})
+    Page<Loan> findByClientClientId(Long clientId, Pageable page);
+    @EntityGraph(attributePaths = {"client", "vehicle"})
+    List<Loan> findByLoanIdIn(List<Long> ids);
 }

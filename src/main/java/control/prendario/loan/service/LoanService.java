@@ -1,5 +1,9 @@
 package control.prendario.loan.service;
 
+import control.prendario.shared.query.BrowseQuery;
+import control.prendario.shared.query.CatalogFilters;
+import control.prendario.shared.query.PageResult;
+import org.springframework.data.domain.Sort;
 import control.prendario.loan.domain.Loan;
 import control.prendario.loan.domain.LoanStatus;
 import control.prendario.loan.dto.LoanDTO;
@@ -143,4 +147,10 @@ public class LoanService {
         return loanRepository.findMaxId();
     }
 
+
+    public PageResult<Loan> pageLoans(BrowseQuery q, boolean overdue) {
+        return PageResult.from(loanRepository.findAll(CatalogFilters.loans(q, overdue),
+                q.page(overdue ? Sort.by(Sort.Direction.DESC, "dueDate", "loanId")
+                        : Sort.by(Sort.Direction.DESC, "loanId"))));
+    }
 }
