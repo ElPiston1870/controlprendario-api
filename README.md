@@ -18,7 +18,7 @@ Java 17 · Spring Boot 3.3.5 (Web, Data JPA, Security, Validation, AOP) · Hiber
 
 | Perfil de Spring | API | Base de datos | Esquema |
 |---|---|---|---|
-| `local` (predeterminado) | `127.0.0.1:8080` | MySQL local en `localhost:3306`, esquema `controlprendario` | Hibernate actualiza el esquema (`update`). |
+| `local` (predeterminado) | `127.0.0.1:8080` | MySQL local en `localhost:3306`, esquema `controlprendario` | Usa el esquema existente (`none`). |
 | `prod` (Oracle) | `127.0.0.1:8080`, detrás del proxy de la VM | TiDB Cloud. La URL y el usuario se configuran en el servicio. | Hibernate valida el esquema existente (`validate`). |
 
 El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el ambiente de la API, establece `SPRING_PROFILES_ACTIVE` en el proceso que la ejecuta.
@@ -40,6 +40,8 @@ El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el
 ### Ejecutar en local
 
 Copia [`.env.example`](.env.example) a `.env` en la raíz del backend y completa `DB_PASSWORD` y las cuentas locales. Spring carga el archivo automáticamente con el perfil `local`. Usa la raíz del backend como directorio de trabajo en IntelliJ. Si necesitas otro directorio, `LOCAL_ENV_LOCATION` acepta una ubicación como `file:/ruta/al/.env`.
+
+En una instalación local nueva, crea la base de datos y sus tablas con [el script del modelo relacional](docs/10-modelo-relacional.sql). Si ya tienes una base de datos, configura su conexión en `.env`.
 
 Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, ejecuta `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en PowerShell. La API queda en `http://localhost:8080` y Swagger en `/swagger-ui.html`. Spring genera una clave de sesión para el proceso local cuando `LOCAL_JWT_SECRET` está ausente. Si se reinicia la API, las sesiones firmadas con esa clave se invalidan.
 

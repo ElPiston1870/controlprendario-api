@@ -34,7 +34,7 @@ class EnvironmentProfilesTest {
             assertThat(environment.getProperty("server.address")).isEqualTo("127.0.0.1");
             assertThat(environment.getProperty("spring.datasource.url"))
                     .startsWith("jdbc:mysql://localhost:3306/controlprendario");
-            assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto")).isEqualTo("update");
+            assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto")).isEqualTo("none");
             assertThat(environment.getProperty("app.cors.allowed-origins")).contains("http://localhost:4200");
         });
     }
