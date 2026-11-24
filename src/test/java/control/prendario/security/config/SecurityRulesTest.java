@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -53,9 +54,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtService.class, WebConfig.class,
         GlobalExceptionHandler.class})
+@ActiveProfiles("local")
 class SecurityRulesTest {
 
-    private static final String ORIGIN = "https://controlprendario.netlify.app";
+    private static final String ORIGIN = "http://localhost:4200";
     private static final String VALID_CLIENT = """
             {"tipoDocumento":"CEDULA","numeroDocumento":"1075000000","nombres":"Cliente",
              "apellidos":"Ficticio","ciudad":"Santa María","telefono":"3000000000"}
@@ -83,6 +85,16 @@ class SecurityRulesTest {
                         .header("Access-Control-Request-Headers", "authorization"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", ORIGIN));
+    }
+
+    @Test
+    void localProfileRejectsUnconfiguredCrossOriginRequests() throws Exception {
+        mockMvc.perform(options("/api/clientes")
+                        .header("Origin", "https://unconfigured.example")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "authorization"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 
     @Test

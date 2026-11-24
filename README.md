@@ -14,50 +14,40 @@ Java 17 · Spring Boot 3.3.5 (Web, Data JPA, Security, Validation, AOP) · Hiber
 - Una base de datos MySQL 8 o TiDB Cloud (en desarrollo también sirve MariaDB)
 - Maven 3.9 o superior (opcional: el proyecto incluye `mvnw`)
 
-## Configuración
+## Ambientes
 
-Toda la configuración sensible se toma de variables de entorno. La aplicación no arranca sin `DB_PASSWORD` ni `JWT_SECRET`.
-
-| Variable | Obligatoria | Descripción | Valor por defecto |
+| Perfil de Spring | API | Base de datos | Esquema |
 |---|---|---|---|
-| `DB_URL` | No | URL JDBC de la base de datos | `jdbc:mysql://localhost:3306/controlprendario?createDatabaseIfNotExist=true` |
-| `DB_USERNAME` | No | Usuario de la base de datos | `root` |
-| `DB_PASSWORD` | Sí | Contraseña de la base de datos | — |
-| `JWT_SECRET` | Sí | Clave para firmar los tokens (mínimo 32 caracteres) | — |
-| `JWT_EXPIRATION` | No | Vigencia del token en milisegundos | `28800000` (8 horas) |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Sí* | Credenciales del gerente (rol `ADMIN`) | — |
-| `OPERATOR_USERNAME` / `OPERATOR_PASSWORD` | Sí* | Credenciales del empleado (rol `OPERATOR`) | — |
-| `DDL_AUTO` | No | Estrategia de esquema de Hibernate | `update` |
-| `SHOW_SQL` | No | Mostrar las consultas SQL en el log | `false` |
-| `LOG_LEVEL_APP` / `LOG_LEVEL_SECURITY` | No | Nivel de log de la aplicación y de Spring Security | `INFO` |
+| `local` (predeterminado) | `127.0.0.1:8080` | MySQL local en `localhost:3306`, esquema `controlprendario` | Hibernate actualiza el esquema (`update`). |
+| `prod` (Oracle) | `127.0.0.1:8080`, detrás del proxy de la VM | TiDB Cloud. La URL y el usuario se configuran en el servicio. | Hibernate valida el esquema existente (`validate`). |
 
-\* Hay que configurar al menos un usuario para poder iniciar sesión. Usuario y contraseña de un mismo rol van siempre juntos.
+El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el ambiente de la API, establece `SPRING_PROFILES_ACTIVE` en el proceso que la ejecuta.
 
-Para TiDB Cloud, la URL incluye TLS, por ejemplo:
+### Variables
 
-```
+| Variable | Uso |
+|---|---|
+| `DB_URL`, `DB_USERNAME` | Requeridas en `prod`. |
+| `LOCAL_DB_URL`, `LOCAL_DB_USERNAME` | Opcionales en `local`. Si se omiten, se usa MySQL en `localhost:3306` con el usuario `root`. |
+| `DB_PASSWORD`, `JWT_SECRET` | Configúralas en cada ambiente. La clave JWT debe tener al menos 32 bytes. |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD`, `OPERATOR_USERNAME` / `OPERATOR_PASSWORD` | Configura el usuario y la contraseña de cada rol que vaya a iniciar sesión. |
+| `JWT_EXPIRATION`, `SHOW_SQL`, `LOG_LEVEL_APP`, `LOG_LEVEL_SECURITY` | Opcionales. La vigencia predeterminada es de 8 horas y la salida de SQL está desactivada. |
+| `APP_CORS_ALLOWED_ORIGINS` | Opcional, con orígenes exactos separados por comas. En `local` se admiten `localhost:4200` y `127.0.0.1:4200`. En `prod` el proxy permite usar el mismo dominio y la lista queda vacía. |
+| `DDL_AUTO` | Permite elegir explícitamente la estrategia de Hibernate. El esquema de referencia está en `docs/10-modelo-relacional.sql`. |
+
+### Ejecutar en local
+
+Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, ejecuta `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en PowerShell. La API queda en `http://localhost:8080` y Swagger en `/swagger-ui.html`.
+
+### Ejecutar en Oracle
+
+En el servicio de Oracle, establece `SPRING_PROFILES_ACTIVE=prod` y configura sus propias credenciales. Usa una URL JDBC de TiDB con TLS, por ejemplo:
+
+```text
 jdbc:mysql://<host>.tidbcloud.com:4000/controlprendario?sslMode=VERIFY_IDENTITY
 ```
 
-El esquema se crea y actualiza solo (`ddl-auto=update`) sin borrar datos. El DDL de referencia está en `docs/10-modelo-relacional.sql`.
-
-## Ejecución
-
-```bash
-./mvnw spring-boot:run
-```
-
-La API queda en `http://localhost:8080` y la documentación interactiva en `http://localhost:8080/swagger-ui.html`.
-
-Para generar el `.jar`:
-
-```bash
-./mvnw clean package
-```
-
-```bash
-java -jar target/prendario-0.0.1-SNAPSHOT.jar
-```
+Compila con `./mvnw clean package` y ejecuta `java -jar target/prendario-0.0.1-SNAPSHOT.jar`. Crea o actualiza el esquema de TiDB antes de arrancar si la validación detecta diferencias. El proxy de Oracle debe pasar el host, el protocolo y el puerto originales según el README del frontend.
 
 ## Autenticación y roles
 
@@ -72,8 +62,6 @@ java -jar target/prendario-0.0.1-SNAPSHOT.jar
 | Consultar movimientos y balance | ✔ | ✔ |
 | Registrar entradas y salidas (`/api/movimientos`) | ✔ | ✘ (403) |
 | Consultar auditoría (`/api/auditoria`) | ✔ | ✘ (403) |
-
-Los orígenes permitidos por CORS están en `shared/WebConfig.java` (`http://localhost:4200` y `https://controlprendario.netlify.app`).
 
 ## Endpoints
 
