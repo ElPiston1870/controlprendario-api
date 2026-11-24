@@ -34,3 +34,8 @@ build/
 
 ### Respaldos de base de datos ###
 backups/
+
+# Configuración privada local
+/.env
+/.env.*
+!/.env.example

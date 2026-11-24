@@ -39,11 +39,13 @@ El frontend usa la misma ruta relativa `/api` en ambos ambientes. Para elegir el
 
 ### Ejecutar en local
 
+Copia [`.env.example`](.env.example) a `.env` en la raíz del backend y completa `DB_PASSWORD` y las cuentas locales. Spring carga el archivo automáticamente con el perfil `local`. Usa la raíz del backend como directorio de trabajo en IntelliJ. Si necesitas otro directorio, `LOCAL_ENV_LOCATION` acepta una ubicación como `file:/ruta/al/.env`.
+
 Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, ejecuta `./mvnw spring-boot:run` o `.\mvnw.cmd spring-boot:run` en PowerShell. La API queda en `http://localhost:8080` y Swagger en `/swagger-ui.html`. Spring genera una clave de sesión para el proceso local cuando `LOCAL_JWT_SECRET` está ausente. Si se reinicia la API, las sesiones firmadas con esa clave se invalidan.
 
 ### Ejecutar en Oracle
 
-En el servicio de Oracle, establece `SPRING_PROFILES_ACTIVE=prod` y configura sus propias credenciales. Usa una URL JDBC de TiDB con TLS, por ejemplo:
+En el servicio de Oracle, establece `SPRING_PROFILES_ACTIVE=prod` y configura sus credenciales como variables del proceso. El perfil `prod` no carga el `.env` local. Usa una URL JDBC de TiDB con TLS, por ejemplo:
 
 ```text
 jdbc:mysql://<host>.tidbcloud.com:4000/controlprendario?sslMode=VERIFY_IDENTITY

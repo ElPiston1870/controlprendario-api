@@ -1,6 +1,11 @@
 package control.prendario.shared.config;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.env.StandardEnvironment;
@@ -9,7 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EnvironmentProfilesTest {
+    @TempDir
+    Path directory;
+
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
+            .withPropertyValues("LOCAL_ENV_LOCATION=file:./target/missing-local-env-for-profile-tests")
             .withInitializer(context -> {
                 var environment = context.getEnvironment();
                 environment.getPropertySources().remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
@@ -84,6 +93,35 @@ class EnvironmentProfilesTest {
                 .run(context -> assertThatThrownBy(() -> context.getEnvironment().getProperty("jwt.secret"))
                         .isInstanceOf(IllegalArgumentException.class)
                         .hasMessageContaining("JWT_SECRET"));
+    }
+
+    @Test
+    void localProfileLoadsCredentialsFromTheLocalEnvFile() throws IOException {
+        Path env = directory.resolve(".env");
+        Files.writeString(env, """
+                ADMIN_USERNAME=fixture-admin
+                DB_PASSWORD=test-local-database-password
+                LOCAL_JWT_SECRET=fixture-local-signing-key-more-than-32-bytes
+                """);
+
+        runner.withPropertyValues("LOCAL_ENV_LOCATION=" + env.toUri())
+                .run(context -> {
+                    var environment = context.getEnvironment();
+                    assertThat(environment.getProperty("app.security.admin.username")).isEqualTo("fixture-admin");
+                    assertThat(environment.getProperty("spring.datasource.password"))
+                            .isEqualTo("test-local-database-password");
+                    assertThat(environment.getProperty("jwt.secret"))
+                            .isEqualTo("fixture-local-signing-key-more-than-32-bytes");
+                });
+    }
+
+    @Test
+    void deployedProfileDoesNotLoadTheLocalEnvFile() throws IOException {
+        Path env = directory.resolve(".env");
+        Files.writeString(env, "ADMIN_USERNAME=fixture-admin");
+
+        runner.withPropertyValues("spring.profiles.active=prod", "LOCAL_ENV_LOCATION=" + env.toUri())
+                .run(context -> assertThat(context.getEnvironment().getProperty("ADMIN_USERNAME")).isNull());
     }
 
     @Test
