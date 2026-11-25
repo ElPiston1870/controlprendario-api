@@ -1,10 +1,12 @@
 package control.prendario.security.config;
 
+import control.prendario.shared.config.FrontendWebConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -102,7 +104,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
-            DaoAuthenticationProvider authenticationProvider
+            DaoAuthenticationProvider authenticationProvider,
+            Environment environment
     ) throws Exception {
         return http
                 .cors(Customizer.withDefaults())
@@ -112,7 +115,14 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, exception) ->
                                 response.sendError(401, "Autenticación requerida")))
-                .authorizeHttpRequests(authorize -> authorize
+                .authorizeHttpRequests(authorize -> {
+                    if (environment.matchesProfiles("prod")) {
+                        authorize.requestMatchers(HttpMethod.GET, FrontendWebConfig.ROUTES).permitAll()
+                                .requestMatchers(HttpMethod.HEAD, FrontendWebConfig.ROUTES).permitAll()
+                                .requestMatchers(HttpMethod.GET, FrontendWebConfig.ASSETS).permitAll()
+                                .requestMatchers(HttpMethod.HEAD, FrontendWebConfig.ASSETS).permitAll();
+                    }
+                    authorize
                         // Preflight CORS del navegador (no lleva token)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error", "/api/auth/login",
@@ -125,7 +135,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auditoria", "/api/auditoria/**").hasRole("ADMIN")
                         // Gerente y empleado gestionan clientes, garantías, préstamos, pagos,
                         // descuentos, correcciones, contratos y consultas (informe, sección 4.3)
-                        .anyRequest().hasAnyRole("ADMIN", "OPERATOR"))
+                        .anyRequest().hasAnyRole("ADMIN", "OPERATOR");
+                })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
