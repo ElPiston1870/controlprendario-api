@@ -181,6 +181,9 @@ class CatalogPaginationTest {
         assertThat(collateral.getInventory(term("hilux ABC123")).content().get(0).isInCollateral()).isTrue();
         assertThat(collateral.getInventory(term("john deere")).content().get(0).isInCollateral()).isFalse();
         assertThat(collateral.getInventory(term("ninguna")).content()).isEmpty();
+        var vehiclesOnly = new BrowseQuery(0, 1, "pérez", null, null, null,
+                null, null, null, null, null, null, "VEHICULO");
+        assertThat(collateral.getInventory(vehiclesOnly).totalElements()).isEqualTo(1);
         assertThat(movements.pageMovements(query(0, "entrada", null, null, null, null, LocalDate.now(), null, null, null))
                 .totalElements()).isEqualTo(1);
         assertThat(events.pageEvents(term("encargado cliente")).totalElements()).isEqualTo(1);

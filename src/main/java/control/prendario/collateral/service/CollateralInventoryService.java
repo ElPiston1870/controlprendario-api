@@ -65,7 +65,7 @@ public class CollateralInventoryService {
         for (String token : CatalogFilters.tokens(query.termino())) {
             String name = "term" + index++;
             params.addValue(name, CatalogFilters.pattern(token));
-            from.append("""
+            from.append(' ').append("""
                      AND (LOWER(nombres) LIKE :TERM ESCAPE '!' OR LOWER(apellidos) LIKE :TERM ESCAPE '!'
                      OR LOWER(numero_documento) LIKE :TERM ESCAPE '!' OR LOWER(tipo) LIKE :TERM ESCAPE '!'
                      OR LOWER(identificador) LIKE :TERM ESCAPE '!' OR LOWER(descripcion) LIKE :TERM ESCAPE '!'
