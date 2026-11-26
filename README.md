@@ -47,6 +47,8 @@ Con MySQL escuchando en el puerto 3306 y las credenciales locales configuradas, 
 
 ### Ejecutar en Oracle
 
+Para ejecutar Angular y la API en un solo contenedor, usa la [configuración de Docker Compose para Oracle](deploy/oracle/README.md).
+
 En el servicio de Oracle, establece `SPRING_PROFILES_ACTIVE=prod` y configura sus credenciales como variables del proceso. El perfil `prod` no carga el `.env` local. Usa una URL JDBC de TiDB con TLS, por ejemplo:
 
 ```text

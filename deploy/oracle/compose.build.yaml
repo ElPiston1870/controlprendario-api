@@ -1,0 +1,6 @@
+services:
+  app:
+    platform: ${CONTROL_PRENDARIO_PLATFORM:-linux/amd64}
+    build:
+      context: ../../..
+      dockerfile: controlprendario-api/deploy/oracle/Dockerfile

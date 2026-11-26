@@ -1,0 +1,11 @@
+services:
+  app:
+    image: ${CONTROL_PRENDARIO_IMAGE:-control-prendario:oracle}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - path: .env.oracle
+        required: false
+        format: raw
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"

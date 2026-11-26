@@ -39,3 +39,4 @@ backups/
 /.env
 /.env.*
 !/.env.example
+/deploy/oracle/.env.oracle
